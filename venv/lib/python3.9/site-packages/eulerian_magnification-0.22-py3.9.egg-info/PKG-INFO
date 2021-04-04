@@ -1,0 +1,12 @@
+Metadata-Version: 1.1
+Name: eulerian-magnification
+Version: 0.22
+Summary: Amplify tiny movements in video.
+Home-page: https://github.com/brycedrennan/eulerian-magnification
+Author: Bryce Drennan
+Author-email: eulerian-magnify@brycedrennan.com
+License: MIT
+Download-URL: https://github.com/brycedrennan/eulerian-magnification/tarball/0.22
+Description: Amplify tiny movements in video.
+Keywords: eulerian magnification,opencv,motion amplification,video
+Platform: UNKNOWN
