@@ -1,12 +1,16 @@
 aniso8601==9.0.1
+bidict==0.21.2
 click==7.1.2
 Flask==1.1.2
 Flask-RESTful==0.3.8
+Flask-SocketIO==5.0.1
 itsdangerous==1.1.0
 Jinja2==2.11.3
 MarkupSafe==1.1.1
 numpy==1.20.2
 opencv-python==4.5.1.48
+python-engineio==3.11.2
+python-socketio==4.4.0
 pytz==2021.1
 six==1.15.0
 Werkzeug==1.0.1
