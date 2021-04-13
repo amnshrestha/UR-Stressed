@@ -7,69 +7,43 @@ function onResults(results) {
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   canvasCtx.drawImage(
       results.image, 0, 0, canvasElement.width, canvasElement.height);
-  if (results.multiFaceLandmarks) {
-    for (const landmarks of results.multiFaceLandmarks) {
-      drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION,
-                     {color: '#C0C0C070', lineWidth: 1});
- 
-
-
-      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, {color: '#FF3030'});
-      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYEBROW, {color: '#FF3030'});
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, {color: '#30FF30'});
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYEBROW, {color: '#30FF30'});
-      drawConnectors(canvasCtx, landmarks, FACEMESH_FACE_OVAL, {color: '#E0E0E0'});
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LIPS, {color: '#E0E0E0'});
-
-
-         
-    var left_End_of_Lip = findCoordinates(landmarks, 76);
-    canvasCtx.fillStyle = "#FF0000";
-    canvasCtx.fillRect(left_End_of_Lip[0], left_End_of_Lip[1], 5, 5);
-
-    var right_End_of_Lip = findCoordinates(landmarks, 291);
-    canvasCtx.fillStyle = "#FF0000";
-    canvasCtx.fillRect(right_End_of_Lip[0], right_End_of_Lip[1], 5, 5);
-    }
-  }
+  drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                 {color: '#00FF00', lineWidth: 4});
+  drawLandmarks(canvasCtx, results.poseLandmarks,
+                {color: '#FF0000', lineWidth: 2});
+  drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
+                 {color: '#C0C0C070', lineWidth: 1});
+  drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
+                 {color: '#CC0000', lineWidth: 5});
+  drawLandmarks(canvasCtx, results.leftHandLandmarks,
+                {color: '#00FF00', lineWidth: 2});
+  drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
+                 {color: '#00CC00', lineWidth: 5});
+  drawLandmarks(canvasCtx, results.rightHandLandmarks,
+                {color: '#FF0000', lineWidth: 2});
   canvasCtx.restore();
 }
 
-// def findCoordinates(toEnumerate, image, idToFind):
-//     for id,lm in enumerate(toEnumerate):
-//         h,w,c = image.shape
-//         cx, cy = int(lm.x * w), int(lm.y * h)
-//         if(id == idToFind):
-//             return cx, cy
-    
-//     return -1,-1
-
-function findCoordinates(toEnumerate, idToFind){
-    var width = canvasElement.width;
-    var height = canvasElement.height;
-    var cx = parseInt(toEnumerate[idToFind].x * width);
-    var cy = parseInt(toEnumerate[idToFind].y * height);
-    return [cx, cy];
-}
-
-const faceMesh = new FaceMesh({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+const holistic = new Holistic({locateFile: (file) => {
+  return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
 }});
-faceMesh.setOptions({
-  maxNumFaces: 1,
+holistic.setOptions({
+  upperBodyOnly: false,
+  smoothLandmarks: true,
   minDetectionConfidence: 0.5,
   minTrackingConfidence: 0.5
 });
-faceMesh.onResults(onResults);
+holistic.onResults(onResults);
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
-    await faceMesh.send({image: videoElement});
+    await holistic.send({image: videoElement});
   },
   width: 1280,
   height: 720
 });
 camera.start();
+
 
 
 
@@ -79,3 +53,59 @@ socket.on('connect', function() {
     console.log('Connected!');
 });
 
+
+
+// Written by Aman
+// Finds x,y coordinate of a landmark
+function findCoordinates(toEnumerate, idToFind){
+  var width = canvasElement.width;
+  var height = canvasElement.height;
+  var cx = parseInt(toEnumerate[idToFind].x * width);
+  var cy = parseInt(toEnumerate[idToFind].y * height);
+  return [cx, cy];
+}
+
+class AllDetectors{
+
+  constructor(){
+    this.sd = new SmileDetector()//Smile Detector
+    this.hr = new HandRaiseDetector()//Hand Raised
+  }
+
+}
+
+
+class SmileDetector{
+
+  constructor(){
+    this.frameSkip = 5;// allow frame skip
+    this.currentFrame = 0;// Current frame size
+    this.previousLength = 0;
+
+    //Landmark points of interest
+    this.x_for_left_lip_corner = 0;
+    this.y_for_left_lip_corner = 0;
+
+    this.x_for_right_lip_corner = 0;
+    this.y_for_right_lip_corner = 0;
+
+    this.x_for_left_face_corner = 0;
+    this.y_for_left_face_corner = 0;
+
+    this.x_for_right_face_corner = 0;
+    this.y_for_right_face_corner = 0;
+  }
+
+  mainDetect(){
+
+  }
+
+}
+
+
+class HandRaised{
+  constructor(){
+
+  }
+
+}
