@@ -3,3 +3,4 @@ app = Flask(__name__)
 
 from application import defaultCamera
 from application import RESTapi
+from application import SocketMethods

@@ -26,7 +26,7 @@ def generate_frames():
 
 
 @app.route('/video')
-def index():
+def video():
     return render_template('mainCamera.html')
 
 @app.route('/video_feed')
