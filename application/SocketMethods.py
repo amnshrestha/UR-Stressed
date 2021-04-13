@@ -8,7 +8,8 @@ socketio = SocketIO(app)
 @app.route('/')
 def index():
     """Home page."""
-    return render_template('test.html')
+    print("Reaching here")
+    return render_template('index.html')
 
 
 @socketio.on('connect', namespace='/web')
