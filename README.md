@@ -17,10 +17,12 @@ flask run #...then Ctrl-C to exit
 
 Implement client side html and javascript to use mediapipe
 
-For the Flask app-
+For the Flask app:
+
     - setup up socket.io correctly
 
 Client-Side tasks:
+
     - Get landmark coordinates
     - Check for smile
     - Check for eyebrow change
@@ -28,6 +30,7 @@ Client-Side tasks:
     - Get landmark coordinates of face and send it to the server
 
 Server-Side tasks:
+    
     - Use landmark coordinates to find head movement
     - Set up database
     - Keep ID for each class
