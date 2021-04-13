@@ -7,20 +7,43 @@ function onResults(results) {
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   canvasCtx.drawImage(
       results.image, 0, 0, canvasElement.width, canvasElement.height);
-  drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
-                 {color: '#00FF00', lineWidth: 4});
-  drawLandmarks(canvasCtx, results.poseLandmarks,
-                {color: '#FF0000', lineWidth: 2});
-  drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
-                 {color: '#C0C0C070', lineWidth: 1});
-  drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
-                 {color: '#CC0000', lineWidth: 5});
-  drawLandmarks(canvasCtx, results.leftHandLandmarks,
-                {color: '#00FF00', lineWidth: 2});
-  drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
-                 {color: '#00CC00', lineWidth: 5});
-  drawLandmarks(canvasCtx, results.rightHandLandmarks,
-                {color: '#FF0000', lineWidth: 2});
+
+      // Commented the following to Remove unnecessary drawings
+
+  // drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+  //                {color: '#00FF00', lineWidth: 4});
+  // drawLandmarks(canvasCtx, results.poseLandmarks,
+  //               {color: '#FF0000', lineWidth: 2});
+  // drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
+  //                {color: '#C0C0C070', lineWidth: 1});
+  // drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
+  //                {color: '#CC0000', lineWidth: 5});
+  // drawLandmarks(canvasCtx, results.leftHandLandmarks,
+  //               {color: '#00FF00', lineWidth: 2});
+  // drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
+  //                {color: '#00CC00', lineWidth: 5});
+  // drawLandmarks(canvasCtx, results.rightHandLandmarks,
+  //               {color: '#FF0000', lineWidth: 2});
+
+
+
+  var sd = new SmileDetector();
+  sd.startDetect(results.faceLandmarks);
+  sd.drawOnCanvas(canvasCtx);
+  sd.checkForSmile();
+
+  
+
+
+  //Use this to find coordinates
+    // for (var i =0;i<results.faceLandmarks.length;i++){
+    //   var testc = findCoordinates(results.faceLandmarks,i);
+    //   canvasCtx.fillText(i, testc[0],testc[1]);
+    // }
+    // var testc = findCoordinates(results.faceLandmarks,76);
+    // var testc2 = findCoordinates(results.faceLandmarks,206);
+    // canvasCtx.fillRect(testc[0],testc[1],5,5);
+    // canvasCtx.fillRect(testc2[0],testc2[1],5,5);
   canvasCtx.restore();
 }
 
@@ -65,14 +88,6 @@ function findCoordinates(toEnumerate, idToFind){
   return [cx, cy];
 }
 
-class AllDetectors{
-
-  constructor(){
-    this.sd = new SmileDetector()//Smile Detector
-    this.hr = new HandRaiseDetector()//Hand Raised
-  }
-
-}
 
 
 class SmileDetector{
@@ -81,6 +96,15 @@ class SmileDetector{
     this.frameSkip = 5;// allow frame skip
     this.currentFrame = 0;// Current frame size
     this.previousLength = 0;
+    this.smileLengthFactor = 1.2;
+
+    this.previousData = {
+      lengthOfLip : 0,
+      dleftLipToLeftCorner: 0,
+      dleftLipToLeftChin: 0,
+      drightLipToRightCorner: 0,
+      drightLipToRightChin: 0,
+    }
 
     //Landmark points of interest
     this.x_for_left_lip_corner = 0;
@@ -96,7 +120,112 @@ class SmileDetector{
     this.y_for_right_face_corner = 0;
   }
 
-  mainDetect(){
+  startDetect(lm){
+     //291 and 61 are for lip corners
+    var leftLipcornerCoordinates = findCoordinates(lm,291);
+    this.x_for_left_lip_corner = leftLipcornerCoordinates[0];
+    this.y_for_left_lip_corner = leftLipcornerCoordinates[1];
+
+    var rightLipcornerCoordinates = findCoordinates(lm,61);
+    this.x_for_right_lip_corner = rightLipcornerCoordinates[0];
+    this.y_for_right_lip_corner = rightLipcornerCoordinates[1];
+
+    var leftFaceCorner = findCoordinates(lm,58);
+    this.x_for_left_face_corner = leftFaceCorner[0];
+    this.y_for_left_face_corner = leftFaceCorner[1];
+
+    var rightFaceCorner = findCoordinates(lm,288);
+    this.x_for_right_face_corner = rightFaceCorner[0];
+    this.y_for_right_face_corner = rightFaceCorner[1];
+
+    var leftChinCorner = findCoordinates(lm,149);
+    this.x_for_left_chin_corner = leftChinCorner[0];
+    this.y_for_left_chin_corner = leftChinCorner[1];
+
+    var rightChinCorner = findCoordinates(lm,378);
+    this.x_for_right_chin_corner = rightChinCorner[0];
+    this.y_for_right_chin_corner = rightChinCorner[1];
+
+  }
+
+  drawOnCanvas(canvasCtx){
+    canvasCtx.fillRect(this.x_for_left_lip_corner,this.y_for_left_lip_corner,5,5);
+    canvasCtx.fillRect(this.x_for_right_lip_corner,this.y_for_right_lip_corner,5,5);
+
+    canvasCtx.fillRect(this.x_for_left_face_corner,this.y_for_left_face_corner,5,5);
+    canvasCtx.fillRect(this.x_for_right_face_corner,this.y_for_right_face_corner,5,5);
+
+    canvasCtx.fillRect(this.x_for_left_chin_corner,this.y_for_left_chin_corner,5,5);
+    canvasCtx.fillRect(this.x_for_right_chin_corner,this.y_for_right_chin_corner,5,5);
+  }
+
+  checkForSmile(){
+
+    //Distance between ends of lips
+    var dLips = Math.sqrt( 
+      Math.pow((this.x_for_left_lip_corner-this.x_for_right_lip_corner), 2) 
+      + 
+      Math.pow((this.y_for_left_lip_corner-this.y_for_right_lip_corner), 2) 
+    );
+
+    //distance Left Lip To Left Corner
+    var dLLTLFaceC = Math.sqrt( 
+      Math.pow((this.x_for_left_lip_corner-this.x_for_left_face_corner), 2) 
+      + 
+      Math.pow((this.y_for_left_lip_corner-this.y_for_left_face_corner), 2) 
+    );
+
+    //distance Left Lip To Left Chin
+    var dLLTLChinC = Math.sqrt( 
+      Math.pow((this.x_for_left_lip_corner-this.x_for_left_chin_corner), 2) 
+      + 
+      Math.pow((this.y_for_left_lip_corner-this.y_for_left_chin_corner), 2) 
+    );
+    
+     //distance Right Lip To Right Corner
+     var dRLTRFaceC = Math.sqrt( 
+      Math.pow((this.x_for_right_lip_corner-this.x_for_right_face_corner), 2) 
+      + 
+      Math.pow((this.y_for_right_lip_corner-this.y_for_right_face_corner), 2) 
+    );
+
+    //distance Right Lip To Right Chin
+    var dRLTRChinC = Math.sqrt( 
+      Math.pow((this.x_for_right_lip_corner-this.x_for_right_chin_corner), 2) 
+      + 
+      Math.pow((this.y_for_right_lip_corner-this.y_for_right_chin_corner), 2) 
+    );
+
+      if(this.currentFrame % this.frameSkip == 0){
+        var previousValues= this.previousData;
+        if(dLips > previousValues.lengthOfLip && 
+          dLLTLFaceC < previousValues.dleftLipToLeftCorner &&
+          dLLTLChinC > previousValues.dleftLipToLeftChin &&
+          dRLTRFaceC < previousValues.drightLipToRightCorner &&
+          dRLTRChinC > previousValues.drightLipToRightChin
+          ){
+            console.log("You Smiled");
+          }
+          
+        console.log("------------------------");
+        console.log("Lips length: "+ dLips + " compared To "+ previousValues.lengthOfLip);
+        console.log("Left to left face: "+ dLLTLFaceC + " compared To "+ previousValues.dleftLipToLeftCorner);
+        console.log("Left to left chin: "+ dLLTLChinC + " compared To "+ previousValues.dleftLipToLeftChin);
+        console.log("Right to right face: "+ dRLTRFaceC + " compared To "+ previousValues.drightLipToRightCorner);
+        console.log("Right to right chin: "+ dRLTRChinC + " compared To "+ previousValues.drightLipToRightChin);
+        console.log("------------------------");
+
+        this.previousData['lengthOfLip'] = dLips;
+        this.previousData['dleftLipToLeftCorner'] = dLLTLFaceC;
+        this.previousData['dleftLipToLeftChin'] = dLLTLChinC;
+        this.previousData['drightLipToRightCorner'] = dRLTRFaceC;
+        this.previousData['drightLipToRightChin'] = dRLTRChinC;
+      }
+      this.currentFrame +=1;
+      if(this.currentFrame >=10000){
+        this.currentFrame = 0;
+      }
+   
 
   }
 
