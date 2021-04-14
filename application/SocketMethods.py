@@ -17,6 +17,12 @@ def connect_web():
     print('[INFO] Web client connected: {}'.format(request.sid))
     socketio.emit('message','Message is being sent', namespace='/web')
 
+@socketio.on('smile', namespace='/web')
+def smile_detected(id):
+    print('[INFO] This person smiled: {}'.format(request.sid))
+    print(id)
+    socketio.emit('message','Message is being sent', namespace='/web')
+
 
 @socketio.on('disconnect', namespace='/web')
 def disconnect_web():

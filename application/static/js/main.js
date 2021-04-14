@@ -27,11 +27,12 @@ function onResults(results) {
   // drawLandmarks(canvasCtx, results.rightHandLandmarks,
   //               {color: '#FF0000', lineWidth: 2});
 
-
-
-  sd.startDetect(results.faceLandmarks);
-  sd.drawOnCanvas(canvasCtx);
-  sd.checkForSmile();
+  if(typeof results.faceLandmarks !== 'undefined'){
+    sd.startDetect(results.faceLandmarks);
+    sd.drawOnCanvas(canvasCtx);
+    sd.checkForSmile();
+  }
+ 
 
   
 
@@ -68,7 +69,7 @@ camera.start();
 
 
 
-let namespace = "/test";
+let namespace = "/web";
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
     console.log('Connected!');
@@ -91,9 +92,10 @@ function findCoordinates(toEnumerate, idToFind){
 class SmileDetector{
 
   constructor(){
-    this.frameSkip = 10;// allow frame skip
+    this.frameSkip = 5;// allow frame skip
     this.currentFrame = 0;// Current frame size
-    this.previousLength = 0;
+
+    this.firstReading = true;
     this.smileLengthFactor = 1.1;
 
     // this.lengthOfLip = 0;
@@ -163,6 +165,11 @@ class SmileDetector{
 
   checkForSmile(){
 
+    if(this.firstReading){
+      this.firstReading = false;
+      return;
+    }
+
     //Distance between ends of lips
     var dLips = Math.sqrt( 
       Math.pow((this.x_for_left_lip_corner-this.x_for_right_lip_corner), 2) 
@@ -205,15 +212,8 @@ class SmileDetector{
           dRLTRChinC > previousValues.drightLipToRightChin
           ){
             console.log("You Smiled");
+            socket.emit('smile', "I smiled");
           }
-          
-          // console.log("------------------------");
-          // console.log("Lips length: "+ dLips + " compared To "+ previousValues.lengthOfLip);
-          // console.log("Left to left face: "+ dLLTLFaceC + " compared To "+ previousValues.dleftLipToLeftCorner);
-          // console.log("Left to left chin: "+ dLLTLChinC + " compared To "+ previousValues.dleftLipToLeftChin);
-          // console.log("Right to right face: "+ dRLTRFaceC + " compared To "+ previousValues.drightLipToRightCorner);
-          // console.log("Right to right chin: "+ dRLTRChinC + " compared To "+ previousValues.drightLipToRightChin);
-          // console.log("------------------------");
 
         previousValues.lengthOfLip = dLips;
         previousValues.dleftLipToLeftCorner = dLLTLFaceC;
