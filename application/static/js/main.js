@@ -2,6 +2,8 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
+
+
 function onResults(results) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -27,7 +29,6 @@ function onResults(results) {
 
 
 
-  var sd = new SmileDetector();
   sd.startDetect(results.faceLandmarks);
   sd.drawOnCanvas(canvasCtx);
   sd.checkForSmile();
@@ -40,10 +41,7 @@ function onResults(results) {
     //   var testc = findCoordinates(results.faceLandmarks,i);
     //   canvasCtx.fillText(i, testc[0],testc[1]);
     // }
-    // var testc = findCoordinates(results.faceLandmarks,76);
-    // var testc2 = findCoordinates(results.faceLandmarks,206);
-    // canvasCtx.fillRect(testc[0],testc[1],5,5);
-    // canvasCtx.fillRect(testc2[0],testc2[1],5,5);
+
   canvasCtx.restore();
 }
 
@@ -93,23 +91,23 @@ function findCoordinates(toEnumerate, idToFind){
 class SmileDetector{
 
   constructor(){
-    this.frameSkip = 5;// allow frame skip
+    this.frameSkip = 10;// allow frame skip
     this.currentFrame = 0;// Current frame size
     this.previousLength = 0;
-    this.smileLengthFactor = 1.2;
+    this.smileLengthFactor = 1.1;
 
-    this.lengthOfLip = 0;
-    this.dleftLipToLeftCorner = 0;
-    this.dleftLipToLeftChin = 0;
-    this.drightLipToRightCorner = 0;
-    this.drightLipToRightChin = 0;
-    // this.previousData = {
-    //   lengthOfLip : 0,
-    //   dleftLipToLeftCorner: 0,
-    //   dleftLipToLeftChin: 0,
-    //   drightLipToRightCorner: 0,
-    //   drightLipToRightChin: 0,
-    // }
+    // this.lengthOfLip = 0;
+    // this.dleftLipToLeftCorner = 0;
+    // this.dleftLipToLeftChin = 0;
+    // this.drightLipToRightCorner = 0;
+    // this.drightLipToRightChin = 0;
+    this.previousData = {
+      lengthOfLip : 0,
+      dleftLipToLeftCorner: 0,
+      dleftLipToLeftChin: 0,
+      drightLipToRightCorner: 0,
+      drightLipToRightChin: 0,
+    }
 
     //Landmark points of interest
     this.x_for_left_lip_corner = 0;
@@ -201,39 +199,43 @@ class SmileDetector{
     );
 
       if(this.currentFrame % this.frameSkip == 0){
-        
-        if(dLips > this.lengthOfLip && 
-          dLLTLFaceC < this.dleftLipToLeftCorner &&
-          dLLTLChinC > this.dleftLipToLeftChin &&
-          dRLTRFaceC < this.drightLipToRightCorner &&
-          dRLTRChinC > this.drightLipToRightChin
+        var previousValues = this.previousData;
+        if(dLips > (previousValues.lengthOfLip * this.smileLengthFactor) && 
+          dLLTLChinC > previousValues.dleftLipToLeftChin &&
+          dRLTRChinC > previousValues.drightLipToRightChin
           ){
             console.log("You Smiled");
           }
           
-        console.log("------------------------");
-        console.log("Lips length: "+ dLips + " compared To "+ this.lengthOfLip);
-        console.log("Left to left face: "+ dLLTLFaceC + " compared To "+ this.dleftLipToLeftCorner);
-        console.log("Left to left chin: "+ dLLTLChinC + " compared To "+ this.dleftLipToLeftChin);
-        console.log("Right to right face: "+ dRLTRFaceC + " compared To "+ this.drightLipToRightCorner);
-        console.log("Right to right chin: "+ dRLTRChinC + " compared To "+ this.drightLipToRightChin);
-        console.log("------------------------");
+          // console.log("------------------------");
+          // console.log("Lips length: "+ dLips + " compared To "+ previousValues.lengthOfLip);
+          // console.log("Left to left face: "+ dLLTLFaceC + " compared To "+ previousValues.dleftLipToLeftCorner);
+          // console.log("Left to left chin: "+ dLLTLChinC + " compared To "+ previousValues.dleftLipToLeftChin);
+          // console.log("Right to right face: "+ dRLTRFaceC + " compared To "+ previousValues.drightLipToRightCorner);
+          // console.log("Right to right chin: "+ dRLTRChinC + " compared To "+ previousValues.drightLipToRightChin);
+          // console.log("------------------------");
 
-        this.lengthOfLip = dLips;
-        this.dleftLipToLeftCorner = dLLTLFaceC;
-        this.dleftLipToLeftChin = dLLTLChinC;
-        this.drightLipToRightCorner = dRLTRFaceC;
-        this.drightLipToRightChin = dRLTRChinC;
+        previousValues.lengthOfLip = dLips;
+        previousValues.dleftLipToLeftCorner = dLLTLFaceC;
+        previousValues.dleftLipToLeftChin = dLLTLChinC;
+        previousValues.drightLipToRightCorner = dRLTRFaceC;
+        previousValues.drightLipToRightChin = dRLTRChinC;
+
+       
+
+
       }
       this.currentFrame +=1;
       if(this.currentFrame >=10000){
         this.currentFrame = 0;
       }
-   
 
   }
 
 }
+
+const sd = new SmileDetector();
+
 
 
 class HandRaised{

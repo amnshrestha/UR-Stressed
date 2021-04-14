@@ -17,6 +17,7 @@ def connect_web():
     print('[INFO] Web client connected: {}'.format(request.sid))
     socketio.emit('message','Message is being sent', namespace='/web')
 
+
 @socketio.on('disconnect', namespace='/web')
 def disconnect_web():
     print('[INFO] Web client disconnected: {}'.format(request.sid))
