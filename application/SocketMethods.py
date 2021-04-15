@@ -1,9 +1,15 @@
 from flask import Flask, render_template, Response,request
 from application import app
+
+from application.pythonClasses import Session
+
 from flask_socketio import SocketIO, send
+
+# from session import Session
 
 socketio = SocketIO(app)
 
+sessionOne = Session()
 
 @app.route('/')
 def index():
@@ -21,6 +27,8 @@ def connect_web():
 def smile_detected(id):
     print('[INFO] This person smiled: {}'.format(request.sid))
     print(id)
+    sessionOne.increaseSmile()
+    print(sessionOne.getTotalSmiling())
     socketio.emit('message','Message is being sent', namespace='/web')
 
 

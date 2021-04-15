@@ -98,11 +98,8 @@ class SmileDetector{
     this.firstReading = true;
     this.smileLengthFactor = 1.1;
 
-    // this.lengthOfLip = 0;
-    // this.dleftLipToLeftCorner = 0;
-    // this.dleftLipToLeftChin = 0;
-    // this.drightLipToRightCorner = 0;
-    // this.drightLipToRightChin = 0;
+    this.smiling = false;
+
     this.previousData = {
       lengthOfLip : 0,
       dleftLipToLeftCorner: 0,
@@ -165,7 +162,7 @@ class SmileDetector{
 
   checkForSmile(){
 
-    if(this.firstReading){
+    if(this.firstReading === true){
       this.firstReading = false;
       return;
     }
