@@ -10,10 +10,8 @@ class EyeBrowDetector{
       this.currentFrame = 0;// Current frame size
   
       this.firstReading = true;
-      this.smileLengthFactor = 1.1;
-  
-      this.smiling = false;
-  
+      this.eyebrowsDistanceLengthFactor = 1.05;
+    
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
         prev_y_for_left_eyebrow_start : 0,
@@ -28,16 +26,24 @@ class EyeBrowDetector{
       this.y_for_right_eyebrow_start = 0;
 
     }
+
+    drawOnCanvas(canvasCtx){
+        canvasCtx.fillRect(this.x_for_left_eyebrow_start,this.y_for_left_eyebrow_start,5,5);
+        canvasCtx.fillRect(this.x_for_right_eyebrow_start,this.y_for_right_eyebrow_start,5,5);
+    }
+    
   
     startDetect(lm){
-       //291 and 61 are for lip corners
-      let leftEyebrowStartCoordinates = findCoordinates(lm,285);
-      this.x_for_left_eyebrow_start = leftEyebrowStartCoordinates[0];
-      this.y_for_left_eyebrow_start = leftEyebrowStartCoordinates[1];
-  
-      let rightEyebrowStartCoordinates = findCoordinates(lm,55);
-      this.x_for_right_eyebrow_start = rightEyebrowStartCoordinates[0];
-      this.y_for_right_eyebrow_start = rightEyebrowStartCoordinates[1];
+        
+        //start of left eyebrow is 285
+        let leftEyebrowStartCoordinates = findCoordinates(lm,336);
+        this.x_for_left_eyebrow_start = leftEyebrowStartCoordinates[0];
+        this.y_for_left_eyebrow_start = leftEyebrowStartCoordinates[1];
+
+        //start of right eyebrow is 55
+        let rightEyebrowStartCoordinates = findCoordinates(lm,107);
+        this.x_for_right_eyebrow_start = rightEyebrowStartCoordinates[0];
+        this.y_for_right_eyebrow_start = rightEyebrowStartCoordinates[1];
 
     }
 
@@ -55,13 +61,17 @@ class EyeBrowDetector{
   
         if(this.currentFrame % this.frameSkip == 0){
           let previousValues = this.previousData;
+
+          if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
+            console.log("distance x is smaller than before");
+          }
           
-          if((distance_x_eyebrows_start < previousValues.prev_distance_x_eyebrows_start) && 
-            ((this.y_for_left_eyebrow_start < previousValues.prev_y_for_left_eyebrow_start) || (this.y_for_right_eyebrow_start < previousValues.prev_y_for_right_eyebrow_start))
-            ){
-              console.log("Your eyebrows confused");
-              socket.emit('eyebrows confused', "I'm confused");
-            }
+        //   if((distance_x_eyebrows_start < previousValues.prev_distance_x_eyebrows_start) && 
+        //     ((this.y_for_left_eyebrow_start < previousValues.prev_y_for_left_eyebrow_start) || (this.y_for_right_eyebrow_start < previousValues.prev_y_for_right_eyebrow_start))
+        //     ){
+        //       console.log("Your eyebrows confused");
+        //       socket.emit('eyebrows confused', "I'm confused");
+        //     }
   
           previousValues.prev_distance_x_eyebrows_start = distance_x_eyebrows_start;
           previousValues.prev_y_for_left_eyebrow_start = this.y_for_left_eyebrow_start
@@ -72,21 +82,10 @@ class EyeBrowDetector{
           this.currentFrame = 0;
         }
     }
-
-    drawOnCanvas(canvasCtx){
-        canvasCtx.fillRect(this.x_for_left_lip_corner,this.y_for_left_lip_corner,5,5);
-        canvasCtx.fillRect(this.x_for_right_lip_corner,this.y_for_right_lip_corner,5,5);
-    
-        canvasCtx.fillRect(this.x_for_left_face_corner,this.y_for_left_face_corner,5,5);
-        canvasCtx.fillRect(this.x_for_right_face_corner,this.y_for_right_face_corner,5,5);
-    
-        canvasCtx.fillRect(this.x_for_left_chin_corner,this.y_for_left_chin_corner,5,5);
-        canvasCtx.fillRect(this.x_for_right_chin_corner,this.y_for_right_chin_corner,5,5);
-      }
-    
   
-  }
+}
 
+const eyebrowDetector = new EyeBrowDetector()
 
 function onResults(results) {
   canvasCtx.save();
@@ -96,29 +95,26 @@ function onResults(results) {
 
       // Commented the following to Remove unnecessary drawings
 
-  // drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
-  //                {color: '#00FF00', lineWidth: 4});
-  // drawLandmarks(canvasCtx, results.poseLandmarks,
-  //               {color: '#FF0000', lineWidth: 2});
-  // drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
-  //                {color: '#C0C0C070', lineWidth: 1});
-  // drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
-  //                {color: '#CC0000', lineWidth: 5});
-  // drawLandmarks(canvasCtx, results.leftHandLandmarks,
-  //               {color: '#00FF00', lineWidth: 2});
-  // drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
-  //                {color: '#00CC00', lineWidth: 5});
-  // drawLandmarks(canvasCtx, results.rightHandLandmarks,
-  //               {color: '#FF0000', lineWidth: 2});
+  drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
+                 {color: '#00FF00', lineWidth: 4});
+  drawLandmarks(canvasCtx, results.poseLandmarks,
+                {color: '#FF0000', lineWidth: 2});
+  drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION,
+                 {color: '#C0C0C070', lineWidth: 1});
+  drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS,
+                 {color: '#CC0000', lineWidth: 5});
+  drawLandmarks(canvasCtx, results.leftHandLandmarks,
+                {color: '#00FF00', lineWidth: 2});
+  drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS,
+                 {color: '#00CC00', lineWidth: 5});
+  drawLandmarks(canvasCtx, results.rightHandLandmarks,
+                {color: '#FF0000', lineWidth: 2});
 
   if(typeof results.faceLandmarks !== 'undefined'){
-    sd.startDetect(results.faceLandmarks);
-    sd.drawOnCanvas(canvasCtx);
-    sd.checkForSmile();
+    eyebrowDetector.startDetect(results.faceLandmarks);
+    eyebrowDetector.drawOnCanvas(canvasCtx);
+    eyebrowDetector.checkForEyebrowConfused()
   }
- 
-
-  
 
 
   //Use this to find coordinates
@@ -131,32 +127,31 @@ function onResults(results) {
 }
 
 const holistic = new Holistic({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
-}});
-holistic.setOptions({
-  upperBodyOnly: false,
-  smoothLandmarks: true,
-  minDetectionConfidence: 0.5,
-  minTrackingConfidence: 0.5
-});
-holistic.onResults(onResults);
-
-const camera = new Camera(videoElement, {
-  onFrame: async () => {
-    await holistic.send({image: videoElement});
-  },
-  width: 1280,
-  height: 720
-});
-camera.start();
-
-
+    return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
+  }});
+  holistic.setOptions({
+    upperBodyOnly: false,
+    smoothLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+  holistic.onResults(onResults);
+  
+  const camera = new Camera(videoElement, {
+    onFrame: async () => {
+      await holistic.send({image: videoElement});
+    },
+    width: 1280,
+    height: 720
+  });
+  camera.start();
 
 
 let namespace = "/web";
 let socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
     console.log('Connected!');
+    console.log('running eyebrow')
 });
 
 
@@ -170,9 +165,3 @@ function findCoordinates(toEnumerate, idToFind){
   let cy = parseInt(toEnumerate[idToFind].y * height);
   return [cx, cy];
 }
-
-
-
-
-
-const sd = new SmileDetector();
