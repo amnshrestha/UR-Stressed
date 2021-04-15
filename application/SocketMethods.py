@@ -14,9 +14,12 @@ sessionOne = Session()
 @app.route('/')
 def index():
     """Home page."""
-    print("Reaching here")
     return render_template('index.html')
 
+@app.route('/hand')
+def hand():
+    """Recognize Hand page."""
+    return render_template('hand.html')
 
 @socketio.on('connect', namespace='/web')
 def connect_web():
