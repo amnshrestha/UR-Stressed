@@ -14,6 +14,8 @@ class EyeBrowDetector{
     
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
+        prev_distance_y_left_eyebrow : 0,
+        prev_distance_y_right_eyebrow : 0,
         prev_y_for_left_eyebrow_start : 0,
         prev_y_for_right_eyebrow_start : 0,
       }
@@ -25,6 +27,9 @@ class EyeBrowDetector{
       this.x_for_right_eyebrow_start = 0;
       this.y_for_right_eyebrow_start = 0;
 
+      this.y_for_left_eye_corner = 0;
+      this.y_for_right_eye_corner = 0;
+
     }
 
     drawOnCanvas(canvasCtx){
@@ -35,15 +40,23 @@ class EyeBrowDetector{
   
     startDetect(lm){
         
-        //start of left eyebrow is 285
+        //start of left eyebrow is 336
         let leftEyebrowStartCoordinates = findCoordinates(lm,336);
         this.x_for_left_eyebrow_start = leftEyebrowStartCoordinates[0];
         this.y_for_left_eyebrow_start = leftEyebrowStartCoordinates[1];
 
-        //start of right eyebrow is 55
+        //start of right eyebrow is 107
         let rightEyebrowStartCoordinates = findCoordinates(lm,107);
         this.x_for_right_eyebrow_start = rightEyebrowStartCoordinates[0];
         this.y_for_right_eyebrow_start = rightEyebrowStartCoordinates[1];
+
+        //start of left eye corner is 362
+        let leftEyeCornerCoordinates = findCoordinates(lm, 362)
+        this.y_for_left_eye_corner = leftEyeCornerCoordinates[1]
+
+        //start of right eye corner is 133
+        let rightEyeCornerCoordinates = findCoordinates(lm, 133)
+        this.y_for_right_eye_corner = rightEyeCornerCoordinates[1];
 
     }
 
@@ -56,15 +69,22 @@ class EyeBrowDetector{
   
       //Distance between start of eyebrows
       let distance_x_eyebrows_start = Math.abs(this.x_for_left_eyebrow_start - this.x_for_right_eyebrow_start);
-    //   let distance_y_left_eyebrows = Math.abs(this.y.x_for_left_eyebrow_start - this.previousData.prev_y_for_left_eyebrow_start);
+      let distance_y_left_eyebrows = Math.abs(this.y_for_left_eyebrow_start - this.y_for_left_eye_corner);
+      let distance_y_right_eyebrows = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner);
     //   let distance_y_right_eyebrows = Math.abs(this.y.x_for_right_eyebrow_start - this.previousData.prev_y_for_right_eyebrow_start);
   
         if(this.currentFrame % this.frameSkip == 0){
           let previousValues = this.previousData;
 
           if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
-            console.log("distance x is smaller than before");
+            console.log("distance X is smaller than before");
           }
+
+          if ((distance_y_left_eyebrows < previousValues.prev_distance_y_left_eyebrow) || 
+          (distance_y_right_eyebrows < previousValues.prev_distance_y_right_eyebrow)) {
+            console.log("distance Y is smaller than before");
+          }
+          
           
         //   if((distance_x_eyebrows_start < previousValues.prev_distance_x_eyebrows_start) && 
         //     ((this.y_for_left_eyebrow_start < previousValues.prev_y_for_left_eyebrow_start) || (this.y_for_right_eyebrow_start < previousValues.prev_y_for_right_eyebrow_start))
@@ -76,6 +96,8 @@ class EyeBrowDetector{
           previousValues.prev_distance_x_eyebrows_start = distance_x_eyebrows_start;
           previousValues.prev_y_for_left_eyebrow_start = this.y_for_left_eyebrow_start
           previousValues.prev_y_for_right_eyebrow_start = this.y_for_right_eyebrow_start
+          previousValues.prev_distance_y_left_eyebrow = distance_y_left_eyebrows
+          previousValues.prev_distance_y_right_eyebrow = distance_y_right_eyebrows
         }
         this.currentFrame +=1;
         if(this.currentFrame >=10000){
