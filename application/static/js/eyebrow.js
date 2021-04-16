@@ -10,7 +10,8 @@ class EyeBrowDetector{
       this.currentFrame = 0;// Current frame size
   
       this.firstReading = true;
-      this.eyebrowsDistanceLengthFactor = 1.05;
+      this.eyebrowsDistanceLengthFactor = 1.02;
+      this.eyebrowsEyeLengthFactor = 1.02
     
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
@@ -29,6 +30,13 @@ class EyeBrowDetector{
 
       this.y_for_left_eye_corner = 0;
       this.y_for_right_eye_corner = 0;
+
+      this.const_distance_y_left_eyebrow = 0;
+      this.const_distance_y_right_eyebrow = 0;
+
+      this.eyebrownsCloser = false;
+      this.eyebrownsLower = false;
+      this.confused = false
 
     }
 
@@ -58,6 +66,14 @@ class EyeBrowDetector{
         let rightEyeCornerCoordinates = findCoordinates(lm, 133)
         this.y_for_right_eye_corner = rightEyeCornerCoordinates[1];
 
+        if (this.firstReading) {
+          this.const_distance_y_left_eyebrow = Math.abs(this.y_for_left_eyebrow_start - this.y_for_left_eye_corner)
+          this.const_distance_y_right_eyebrow = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner)
+        }
+
+        this.eyebrownsCloser = false
+        this.eyebrownsLower = false
+        this.confused = false
     }
 
     checkForEyebrowConfused(){
@@ -77,13 +93,36 @@ class EyeBrowDetector{
           let previousValues = this.previousData;
 
           if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
-            console.log("distance X is smaller than before");
+            // console.log("distance X is smaller than before");
+            this.eyebrownsCloser = true;
           }
 
-          if ((distance_y_left_eyebrows < previousValues.prev_distance_y_left_eyebrow) || 
-          (distance_y_right_eyebrows < previousValues.prev_distance_y_right_eyebrow)) {
-            console.log("distance Y is smaller than before");
+          // if (distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) {
+          //   console.log("distance Y LEFT is smaller than before");
+          // }
+
+          // if (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow) {
+          //   console.log("distance Y RIGHT is smaller than before");
+          // }
+
+          if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
+          (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
+            // console.log("distance Y is smaller than before");
+            this.eyebrownsLower = true
           }
+
+          if (this.eyebrownsCloser && this.eyebrownsLower) {
+            console.log("You are confused!")
+            this.confused = true
+          }
+
+          // if (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow) {
+          //   console.log("distance Y RIGHT is smaller than before");
+          // }
+          // if ((distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
+          // (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
+          //   console.log("distance Y is smaller than before");
+          // }
           
           
         //   if((distance_x_eyebrows_start < previousValues.prev_distance_x_eyebrows_start) && 
