@@ -350,6 +350,7 @@ class EyeBrowDetector{
 
         if (this.eyebrownsCloser && this.eyebrownsLower) {
           console.log("You are confused!")
+          socket.emit('confused', "I am confused");
           this.confused = true
         }
 
@@ -415,7 +416,11 @@ class HandRaised {
         if (this.checkForPalm(rightHand)) { palm = true; }
       }
       
-      if (palm) { console.log('You raised your hand'); } // eslint-disable-line}
+      if (palm) { 
+        console.log('You raised your hand'); 
+        socket.emit('handraise', "I raised my hand");
+
+      } // eslint-disable-line}
     }
     
     this.frameCounter++;

@@ -40,6 +40,24 @@ def smile_detected(id):
     socketio.emit('message','Message is being sent', namespace='/web')
 
 
+# handraise
+# confused
+@socketio.on('confused', namespace='/web')
+def smile_detected(id):
+    print('[INFO] This person is confused: {}'.format(request.sid))
+    print(id)
+    # sessionOne.increaseSmile()
+    # print(sessionOne.getTotalSmiling())
+    socketio.emit('message','Message is being sent', namespace='/web')
+
+@socketio.on('handraise', namespace='/web')
+def smile_detected(id):
+    print('[INFO] This person raised their hand: {}'.format(request.sid))
+    print(id)
+    # sessionOne.increaseSmile()
+    # print(sessionOne.getTotalSmiling())
+    socketio.emit('message','Message is being sent', namespace='/web')
+
 @socketio.on('disconnect', namespace='/web')
 def disconnect_web():
     print('[INFO] Web client disconnected: {}'.format(request.sid))
