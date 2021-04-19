@@ -19,7 +19,7 @@ class Session:
         self.peopleSmiling = self.peopleSmiling + 1
     
     def decreaseSmile(self):
-        self.peopleSmiling = self.peopleSmiling - 1 
+        self.peopleSmiling = self.peopleSmiling - 1
     
     def getTotalSmiling(self):
         return self.peopleSmiling
@@ -29,7 +29,7 @@ class Session:
         self.peopleConfused = self.peopleConfused + 1
     
     def decreaseConfused(self):
-        self.peopleConfused = self.peopleConfused - 1 
+        self.peopleConfused = self.peopleConfused - 1
     
     def getTotalConfused(self):
         return self.peopleConfused
@@ -39,8 +39,16 @@ class Session:
         self.totalRaisedHand = self.totalRaisedHand + 1
     
     def decreaseTotalRaisedHand(self):
-        self.totalRaisedHand = self.totalRaisedHand - 1 
+        self.totalRaisedHand = self.totalRaisedHand - 1
     
     def getTotalRaisedHand(self):
         return self.totalRaisedHand
 
+    def updateSmiling(self, value):
+        self.peopleSmiling = self.peopleSmiling + value
+
+    def updateConfused(self, value):
+        self.peopleConfused = self.peopleConfused + value
+
+    def updateRaisedHands(self, value):
+        self.totalRaisedHand = self.totalRaisedHand + value

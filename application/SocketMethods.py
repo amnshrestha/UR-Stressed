@@ -40,26 +40,26 @@ def connect_web():
     socketio.emit('message','Message is being sent', namespace='/web')
 
 @socketio.on('smile', namespace='/web')
-def smile_detected(id):
+def smile_detected(data):
     print('[INFO] This person smiled: {}'.format(request.sid))
-    print(id)
-    sessionOne.increaseSmile()
+    print(data['value'])
+    sessionOne.updateSmiling(data['value'])
     print(sessionOne.getTotalSmiling())
     socketio.emit('smileResponse',sessionOne.getTotalSmiling(), namespace='/web')
 
 @socketio.on('confused', namespace='/web')
-def confuse_detected(id):
+def confuse_detected(data):
     print('[INFO] This person is confused: {}'.format(request.sid))
-    print(id)
-    sessionOne.increaseConfused()
+    print(data['value'])
+    sessionOne.updateConfused(data['value'])
     print(sessionOne.getTotalConfused())
     socketio.emit('confuseResponse',sessionOne.getTotalConfused(), namespace='/web')
 
 @socketio.on('handraise', namespace='/web')
-def hand_raise_detected(id):
+def hand_raise_detected(data):
     print('[INFO] This person raised their hand: {}'.format(request.sid))
-    print(id)
-    sessionOne.increaseTotalRaisedHand()
+    print(data['value'])
+    sessionOne.updateRaisedHands(data['value'])
     print(sessionOne.getTotalRaisedHand())
     socketio.emit('raiseHandResponse',sessionOne.getTotalRaisedHand(), namespace='/web')
 
