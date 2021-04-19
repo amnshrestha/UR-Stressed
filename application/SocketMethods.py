@@ -29,10 +29,10 @@ def instructorView():
 #     """Recognize Hand page."""
 #     return render_template('hand.html')
 
-# @app.route('/eyebrow')
-# def eyebrow():
-#     """Recognize Eyebrow page."""
-#     return render_template('eyebrow.html')
+@app.route('/eyebrow')
+def eyebrow():
+    """Recognize Eyebrow page."""
+    return render_template('eyebrow.html')
 
 @socketio.on('connect', namespace='/web')
 def connect_web():

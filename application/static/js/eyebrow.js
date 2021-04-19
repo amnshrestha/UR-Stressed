@@ -6,12 +6,12 @@ const canvasCtx = canvasElement.getContext('2d');
 class EyeBrowDetector{
 
     constructor(){
-      this.frameSkip = 5;// allow frame skip
+      this.frameSkip = 10;// allow frame skip
       this.currentFrame = 0;// Current frame size
   
       this.firstReading = true;
-      this.eyebrowsDistanceLengthFactor = 1.02;
-      this.eyebrowsEyeLengthFactor = 1.02
+      this.eyebrowsDistanceLengthFactor = 1.05;
+      this.eyebrowsEyeLengthFactor = 1.1;
     
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
@@ -33,6 +33,10 @@ class EyeBrowDetector{
 
       this.const_distance_y_left_eyebrow = 0;
       this.const_distance_y_right_eyebrow = 0;
+
+      this.const_distance_z_left = 0;
+      this.const_distance_z_right = 0;
+      this.const_distance_z_average = 0;
 
       this.eyebrownsCloser = false;
       this.eyebrownsLower = false;
@@ -61,10 +65,14 @@ class EyeBrowDetector{
         //start of left eye corner is 362
         let leftEyeCornerCoordinates = findCoordinates(lm, 362)
         this.y_for_left_eye_corner = leftEyeCornerCoordinates[1]
+        this.const_distance_z_left = leftEyeCornerCoordinates[2]
 
         //start of right eye corner is 133
         let rightEyeCornerCoordinates = findCoordinates(lm, 133)
         this.y_for_right_eye_corner = rightEyeCornerCoordinates[1];
+        this.const_distance_z_right = rightEyeCornerCoordinates[2]
+
+        this.const_distance_z_average = (this.const_distance_z_left + this.const_distance_z_right) / 2;
 
         if (this.firstReading) {
           this.const_distance_y_left_eyebrow = Math.abs(this.y_for_left_eyebrow_start - this.y_for_left_eye_corner)
@@ -94,44 +102,39 @@ class EyeBrowDetector{
 
           if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
             // console.log("distance X is smaller than before");
+            // console.log("z distance is: " + this.const_distance_z_average)
             this.eyebrownsCloser = true;
           }
 
-          // if (distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) {
-          //   console.log("distance Y LEFT is smaller than before");
-          // }
+          if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
+          (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
+            // console.log("distance Y is smaller than before");
+            this.eyebrownsLower = true;
+          }
 
           // if (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow) {
           //   console.log("distance Y RIGHT is smaller than before");
           // }
 
-          if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
-          (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
-            // console.log("distance Y is smaller than before");
-            this.eyebrownsLower = true
-          }
+          // if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
+          // (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
+          //   console.log("distance Y is smaller than before");
+          //   this.eyebrownsLower = true;
+          //   // console.log("z distance is: " + this.const_distance_z_average);
+          // }
 
           if (this.eyebrownsCloser && this.eyebrownsLower) {
             console.log("You are confused!")
             this.confused = true
+            // console.log("z distance is: " + this.const_distance_z_average)
           }
 
-          // if (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow) {
-          //   console.log("distance Y RIGHT is smaller than before");
-          // }
+      
           // if ((distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
           // (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
           //   console.log("distance Y is smaller than before");
           // }
-          
-          
-        //   if((distance_x_eyebrows_start < previousValues.prev_distance_x_eyebrows_start) && 
-        //     ((this.y_for_left_eyebrow_start < previousValues.prev_y_for_left_eyebrow_start) || (this.y_for_right_eyebrow_start < previousValues.prev_y_for_right_eyebrow_start))
-        //     ){
-        //       console.log("Your eyebrows confused");
-        //       socket.emit('eyebrows confused', "I'm confused");
-        //     }
-  
+         
           previousValues.prev_distance_x_eyebrows_start = distance_x_eyebrows_start;
           previousValues.prev_y_for_left_eyebrow_start = this.y_for_left_eyebrow_start
           previousValues.prev_y_for_right_eyebrow_start = this.y_for_right_eyebrow_start
@@ -224,5 +227,6 @@ function findCoordinates(toEnumerate, idToFind){
   let height = canvasElement.height;
   let cx = parseInt(toEnumerate[idToFind].x * width);
   let cy = parseInt(toEnumerate[idToFind].y * height);
+  // let cz = parseInt(toEnumerate[idToFind].z * height);
   return [cx, cy];
 }

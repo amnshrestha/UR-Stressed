@@ -248,7 +248,7 @@ class EyeBrowDetector{
 
     this.firstReading = true;
     this.eyebrowsDistanceLengthFactor = 1.02;
-    this.eyebrowsEyeLengthFactor = 1.02
+    this.eyebrowsEyeLengthFactor = 1.02;
   
     this.previousData = {
       prev_distance_x_eyebrows_start : 0,
