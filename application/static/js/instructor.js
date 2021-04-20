@@ -1,25 +1,65 @@
-$(document).ready(()=>{
-    console.log("document is ready");
-});
+const cloud = document.getElementById('cloud');
+
+const emojis = [
+  '✋', // hand raised
+  '😀', // smile
+  '🤔', // confused
+];
+
+const freqs = [
+  0,
+  0,
+  0,
+];
+
+function render() {
+  console.log(freqs); // eslint-disable-line
+  const total = freqs.reduce((a, b) => a + b, 0);
+
+  let child = cloud.lastElementChild; 
+  while (child) {
+      cloud.removeChild(child);
+      child = cloud.lastElementChild;
+  }
+
+  emojis.forEach((emoji, index) => {
+    let locX = Math.floor(Math.random() * 55) + 25;
+    let locY = Math.floor(Math.random() * 55) + 25;
+  
+    let size = freqs[index]/total * 100;
+    const node = document.createElement('div');
+    node.style.fontSize = `${size + 40}px`;
+    node.style.display = 'block';
+    node.textContent = emoji;
+    cloud.appendChild(node);
+  });
+}
+
+
+render();
 
 let namespace = "/web";
 
-var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
-    console.log('Connected!');
+  console.log('Connected!');
+});
+
+
+socket.on('raiseHandResponse', function(newHandRaiseCount) {
+  freqs[0] = newHandRaiseCount;
+  render();
+  console.log('hand raise detected!');
 });
 
 socket.on('smileResponse', function(newSmileCount) {
-    $("#totalSmiling").text(newSmileCount + " people seem to be smiling")
-    console.log('smile detected!');
+  freqs[1] = newSmileCount;
+  render();
+  console.log('smile detected!');
 });
 
 socket.on('confuseResponse', function(newConfuseCount) {
-    $("#totalConfused").text(newConfuseCount + " people seem confused")
-    console.log('confuse detected!');
-});
-
-socket.on('raiseHandResponse', function(newHandRaiseCount) {
-    $("#totalRaisedHand").text(newHandRaiseCount+ " people seem to have raised their hands")
-    console.log('hand raise detected!');
+  freqs[2] = newConfuseCount;
+  render();
+  console.log('confuse detected!');
 });

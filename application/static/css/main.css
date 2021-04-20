@@ -1,3 +1,43 @@
-body{
-    background-color: rgb(43, 43, 44);
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+* { box-sizing: border-box; }
+
+.nav {
+  width: 100vw;
+  height: 72px;
+  background: gray;
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 90vh;
+  color: black;
+  padding: 32px;
+}
+
+.left, .right {
+  display: flex;
+  width: 50%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.camera {
+  display: flex;
+  width: 320px;
+  height: 180px;
+  background: black;
+}
+
+.reactions {
+  display: flex;
+  width: 90%;
+  height: 400px;
+  background: rgba(155, 206, 240, .5);
 }

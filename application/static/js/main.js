@@ -2,6 +2,11 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
+let IS_SMILING = false;
+let IS_CONFUSED = false;
+let IS_HAND_RAISED = false;
+const MAX_FRAMES = 10000;
+
 function onResults(results) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
@@ -29,16 +34,23 @@ function onResults(results) {
     sd.startDetect(results.faceLandmarks);
     sd.drawOnCanvas(canvasCtx);
     sd.checkForSmile();
+  } else {
+    IS_SMILING = false;
   }
 
   if (typeof results.faceLandmarks !== 'undefined') {
     eyebrowDetector.startDetect(results.faceLandmarks);
     eyebrowDetector.drawOnCanvas(canvasCtx);
     eyebrowDetector.checkForEyebrowConfused()
+  } else {
+    IS_CONFUSED = false;
   }
 
   if (typeof results.leftHandLandmarks !== 'undefined' || typeof results.rightHandLandmarks !== 'undefined') {
     hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
+  } else {
+    // console.log('something'); // eslint-disable-line
+    IS_HAND_RAISED = false;
   }
 
   //Use this to find coordinates
@@ -99,8 +111,7 @@ class SmileDetector {
 
     this.firstReading = true;
     this.smileLengthFactor = 1.1;
-
-    this.smiling = false;
+    this.endSmileFactor = .9;
 
     this.previousData = {
       lengthOfLip: 0,
@@ -204,16 +215,22 @@ class SmileDetector {
         dLLTLChinC > previousValues.dleftLipToLeftChin &&
         dRLTRChinC > previousValues.drightLipToRightChin
       ) {
-        if (!this.smiling) {
+        if (!IS_SMILING) {
+          console.log('add smile'); // eslint-disable-line
           socket.emit('smile', { value: 1 });
-          console.log("You Smiled");
         }
-        this.smiling = true;
-      } else {
-        if (this.smiling) {
+        IS_SMILING = true;
+      }
+
+      if (dLips < (previousValues.lengthOfLip * this.endSmileFactor) &&
+        dLLTLChinC < previousValues.dleftLipToLeftChin &&
+        dRLTRChinC < previousValues.drightLipToRightChin
+      ) {
+        if (IS_SMILING) {
+          console.log('remove smile'); // eslint-disable-line
           socket.emit('smile', { value: -1 });
         }
-        this.smiling = false;
+        IS_SMILING = false;
       }
 
       previousValues.lengthOfLip = dLips;
@@ -222,8 +239,9 @@ class SmileDetector {
       previousValues.drightLipToRightCorner = dRLTRFaceC;
       previousValues.drightLipToRightChin = dRLTRChinC;
     }
-    this.currentFrame += 1;
-    if (this.currentFrame >= 10000) {
+
+    this.currentFrame++;
+    if (this.currentFrame >= MAX_FRAMES) {
       this.currentFrame = 0;
     }
   }
@@ -261,7 +279,6 @@ class EyeBrowDetector {
 
     this.eyebrownsCloser = false;
     this.eyebrownsLower = false;
-    this.confused = false
   }
 
   drawOnCanvas(canvasCtx) {
@@ -332,17 +349,18 @@ class EyeBrowDetector {
       }
 
       if (this.eyebrownsCloser && this.eyebrownsLower) {
-        if (!this.confused) {
+        if (!IS_CONFUSED) {
+          // console.log("add confused");
           socket.emit('confused', { value: 1 });
-          console.log("You are confused!")
         }
         
-        this.confused = true;
+        IS_CONFUSED = true;
       } else {
-        if (this.confused) {
+        if (IS_CONFUSED) {
+          // console.log("remove confused");
           socket.emit('confused', { value: -1 });
         }
-        this.confused = false;
+        IS_CONFUSED = false;
       }
 
       // if (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow) {
@@ -379,7 +397,6 @@ class HandRaised {
     this.skipFrame = 10;
     this.frameCounter = 0;
     this.minY = 0;
-    this.prevState = false;
   }
 
   checkForPalm(hand) {
@@ -412,22 +429,23 @@ class HandRaised {
       }
 
       if (palm) {
-        if (!this.prevState) {
+        if (!IS_HAND_RAISED) {
+          console.log('add hand'); // eslint-disable-line
           socket.emit('handraise', { value: 1 });
-          console.log('You raised your hand');
         }
 
-        this.prevState = true;
+        IS_HAND_RAISED = true;
       } else {
-        if (this.prevState) {
+        if (IS_HAND_RAISED) {
+          console.log('remove hand'); // eslint-disable-line
           socket.emit('handraise', { value: -1 });
         }
-        this.prevState = false;
+        IS_HAND_RAISED = false;
       }
     }
 
     this.frameCounter++;
-    if (this.frameCounter >= 10000) {
+    if (this.frameCounter >= MAX_FRAMES) {
       this.frameCounter = 0;
     }
   }
