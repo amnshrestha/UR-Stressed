@@ -105,7 +105,12 @@ class HeadMovementDetection:
         headNodded = False
         saidNo = False
 
+        #reset values
         if(self.currentFrame > 10000):
+            self.raisedup = False
+            self.loweredDown = False
+            self.righTurn = False
+            self.leftTurn = False
             self.currentFrame = 0
 
         if(self.currentFrame % self.frameSkip != 0):
