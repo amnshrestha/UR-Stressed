@@ -614,7 +614,10 @@ class HandRaised {
         if (this.checkForPalm(rightHand)) { palm = true; }
       }
       
-      if (palm) { console.log('You raised your hand'); } // eslint-disable-line}
+      if (palm) { 
+        console.log('You raised your hand'); 
+        socket.emit('handraised', "I raised my hand");
+      } // eslint-disable-line}
     }
     this.frameCounterHandRaise++;
     if (this.frameCounterHandRaise >= 10000){
@@ -629,7 +632,7 @@ class HandRaised {
       if (rightHandThumbsUp) {
         console.log("Thumbs up");
         this.thumbsUp = true;
-        // socket.emit('thumbsup', "my right hand thumbs up");
+        socket.emit('thumbsup', "my right hand thumbs up");
       }
       // if (rightHandThumbsUp || leftHandThumbsUp) {
       //   this.thumbsUp = true;
