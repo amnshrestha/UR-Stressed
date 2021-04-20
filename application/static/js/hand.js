@@ -18,6 +18,8 @@ class HandRaised {
     this.frameCounter = 0;
     this.minY = 0;
     this.thumbsLengthFactor = 1.2;
+    this.thumbsCloseFactor = 1.02;
+    this.thumbsUp = false;
   }
 
   checkForPalm(hand) {
@@ -54,33 +56,65 @@ class HandRaised {
   }
 
   checkforThumbsUp(leftHand, rightHand) {
-    // console.log("check for thumbs up...");
     if (this.frameCounter % this.skipFrame === 0) {
-      let y_rightThumbTip = findCoordinates(rightHand, 4)[1];
-      let y_rightIndexTip = findCoordinates(rightHand, 8)[1];
-      let y_rightMiddleTip = findCoordinates(rightHand, 12)[1];
-      let y_rightRingTip = findCoordinates(rightHand, 16)[1];
-      let y_rightPinkyTip = findCoordinates(rightHand, 20)[1];
-
-      let y_rightIndexMCP = findCoordinates(rightHand, 5)[1];
-      let y_rightMiddleMCP = findCoordinates(rightHand, 9)[1];
-      let y_rightRingMCP = findCoordinates(rightHand, 13)[1];
-      let y_rightPinkyMCP = findCoordinates(rightHand, 17)[1];
-    
-      // if (y_rightThumbTip * this.thumbsLengthFactor < y_rightIndexMCP) {
-      //   console.log("Thumps higher");
-      // }
-      if (y_rightThumbTip * this.thumbsLengthFactor < y_rightIndexMCP && 
-        y_rightIndexMCP < y_rightMiddleMCP && 
-        y_rightMiddleMCP  < y_rightRingMCP && 
-        y_rightRingMCP < y_rightPinkyMCP) {
-          console.log("Right hand Thumbs up")
+      let rightHandThumbsUp = this.checkforOneHandThumbsUp(rightHand);
+      // let leftHandThumbsUp = this.checkforOneHandThumbsUp(leftHand);
+      if (rightHandThumbsUp || leftHandThumbsUp) {
+        this.thumbsUp = true;
+        console.log("Thumbs up");
       }
     }
     this.frameCounter++;
     if (this.frameCounter >= 10000){
       this.frameCounter = 0;
     }
+  }
+
+  checkforOneHandThumbsUp(targetHand) {
+    
+    //finger tip coordinates
+    let y_rightThumbTip = findCoordinates(targetHand, 4)[1];
+    let x_rightIndexTip = findCoordinates(targetHand, 8)[0];
+    let x_rightMiddleTip = findCoordinates(targetHand, 12)[0];
+    let x_rightRingTip = findCoordinates(targetHand, 16)[0];
+    let x_rightPinkyTip = findCoordinates(targetHand, 20)[0];
+
+    //finger MCP coordinates
+    let y_rightIndexMCP = findCoordinates(targetHand, 5)[1];
+    let y_rightMiddleMCP = findCoordinates(targetHand, 9)[1];
+    let y_rightRingMCP = findCoordinates(targetHand, 13)[1];
+    let y_rightPinkyMCP = findCoordinates(targetHand, 17)[1];
+
+    //finger PIP coordinates
+    let x_rightIndexPIP = findCoordinates(targetHand, 6)[0];
+    let x_rightMiddlePIP = findCoordinates(targetHand, 10)[0];
+    let x_rightRingPIP = findCoordinates(targetHand, 14)[0];
+    let x_rightPinkyPIP = findCoordinates(targetHand, 19)[0];
+  
+    let y_thumbsUp = false;
+    if (y_rightThumbTip * this.thumbsLengthFactor < y_rightIndexMCP && 
+      y_rightIndexMCP < y_rightMiddleMCP && 
+      y_rightMiddleMCP  < y_rightRingMCP && 
+      y_rightRingMCP < y_rightPinkyMCP) {
+        // console.log("thumb higher");
+        y_thumbsUp = true;
+    }
+    let x_thumbsUp = false;
+    if (x_rightIndexTip * this.thumbsCloseFactor < x_rightIndexPIP &&
+      x_rightMiddleTip * this.thumbsCloseFactor < x_rightMiddlePIP &&
+      x_rightRingTip * this.thumbsCloseFactor < x_rightRingPIP &&
+      x_rightPinkyTip * this.thumbsCloseFactor < x_rightPinkyPIP) 
+    {
+      // console.log("hand close");
+      x_thumbsUp = true;
+    }
+
+    if (y_thumbsUp && x_thumbsUp) {
+      // console.log("One hand Thumbs up");
+      return true;
+    }
+    return false;
+    
   }
 
 }
