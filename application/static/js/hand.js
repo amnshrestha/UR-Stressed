@@ -59,10 +59,15 @@ class HandRaised {
     if (this.frameCounter % this.skipFrame === 0) {
       let rightHandThumbsUp = this.checkforOneHandThumbsUp(rightHand);
       // let leftHandThumbsUp = this.checkforOneHandThumbsUp(leftHand);
-      if (rightHandThumbsUp || leftHandThumbsUp) {
-        this.thumbsUp = true;
+      if (rightHandThumbsUp) {
         console.log("Thumbs up");
+        this.thumbsUp = true;
+        // socket.emit('thumbsup', "my right hand thumbs up");
       }
+      // if (rightHandThumbsUp || leftHandThumbsUp) {
+      //   this.thumbsUp = true;
+      //   console.log("Thumbs up");
+      // }
     }
     this.frameCounter++;
     if (this.frameCounter >= 10000){

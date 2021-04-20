@@ -184,8 +184,9 @@ class EyeBrowDetector{
           // }
 
           if (this.eyebrowsCloser && this.eyebrowsLower && !this.surprised) {
-            console.log("You are confused!")
-            this.confused = true
+            console.log("You are confused!");
+            // socket.emit('confused', "I am confused");
+            this.confused = true;
             // console.log("z distance is: " + this.const_distance_z_average)
           }
 
@@ -246,7 +247,8 @@ class EyeBrowDetector{
 
         if (this.eyebrowsRaised && this.lipOpen) {
           this.surprised = true;
-          console.log("You are surprised")
+          console.log("You are surprised");
+          // socket.emit('surprised', "I am surprised");
         }
 
         previousValues.prev_y_for_left_eyebrow_middle = this.y_for_left_eyebrow_middle
