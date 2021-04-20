@@ -13,7 +13,8 @@ class EyeBrowDetector{
       this.firstReadingSurprised = true;
       this.eyebrowsDistanceLengthFactor = 1.05;
       this.eyebrowsEyeLengthFactor = 1.1;
-      this.eyeBrowChangeThreshold = 8
+      this.eyeBrowChangeThreshold = 8;
+      this.foreheadDistanceLengthFactor = 1.05;
     
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
@@ -23,6 +24,8 @@ class EyeBrowDetector{
         prev_y_for_right_eyebrow_start : 0,
         prev_y_for_left_eyebrow_middle : 0,
         prev_y_for_right_eyebrow_middle : 0,
+        prev_distance_forehead_left : 0,
+        prev_distance_forehead_right : 0,
       }
   
       //Landmark points of interest to eyebrows confused
@@ -51,6 +54,9 @@ class EyeBrowDetector{
       this.y_for_right_eyebrow_middle = 0;
       this.x_for_left_eyebrow_middle = 0;
       this.x_for_right_eyebrow_middle = 0;
+
+      this.y_for_left_forehead = 0;
+      this.y_for_right_forehead = 0;
 
     }
 
@@ -93,6 +99,14 @@ class EyeBrowDetector{
         let rightEyebrowMiddleCoordinates = findCoordinates(lm, 105)
         this.x_for_right_eyebrow_middle = rightEyebrowMiddleCoordinates[0]
         this.y_for_right_eyebrow_middle = rightEyebrowMiddleCoordinates[1]
+
+        //left forehead is 297
+        let leftForeheadCoordinates = findCoordinates(lm, 297)
+        this.y_for_left_forehead = leftForeheadCoordinates[1]
+
+        //right forehead is 67
+        let rightForeheadCoordinates = findCoordinates(lm, 67)
+        this.y_for_right_forehead = rightForeheadCoordinates[1]
 
         // this.const_distance_z_average = (this.const_distance_z_left + this.const_distance_z_right) / 2;
 
@@ -171,24 +185,30 @@ class EyeBrowDetector{
         this.firstReading = false;
         return;
       }
-  
+      let leftForeheadDistance = Math.abs(this.y_for_left_eyebrow_middle - this.y_for_left_forehead)
+      let rightForeheadDistance = Math.abs(this.y_for_right_eyebrow_middle - this.y_for_right_forehead)
 
       if(this.currentFrame % this.frameSkip == 0){
         let previousValues = this.previousData;
 
         //Distance between current and previous middles of eyebrows
-        let leftEyebrowChange = Math.abs(this.y_for_left_eyebrow_middle - previousValues.prev_y_for_left_eyebrow_middle)
-        let rightEyebrowChange = Math.abs(this.y_for_right_eyebrow_middle - previousValues.prev_y_for_right_eyebrow_middle)
-
+        // let leftEyebrowChange = Math.abs(this.y_for_left_eyebrow_middle - previousValues.prev_y_for_left_eyebrow_middle)
+        // let rightEyebrowChange = Math.abs(this.y_for_right_eyebrow_middle - previousValues.prev_y_for_right_eyebrow_middle)
         // console.log("left eyebrow: " + leftEyebrowChange);
         // console.log("right eyebrow: " + rightEyebrowChange);
 
-        if (leftEyebrowChange > this.eyeBrowChangeThreshold && rightEyebrowChange > this.eyeBrowChangeThreshold) {
-          console.log("Eyebrows raised")
+        if ((leftForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_left) &&
+        (rightForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_right)) {
+          console.log("You are surprised")
         }
+        // if (leftEyebrowChange > this.eyeBrowChangeThreshold && rightEyebrowChange > this.eyeBrowChangeThreshold) {
+        //   console.log("Eyebrows raised")
+        // }
 
         previousValues.prev_y_for_left_eyebrow_middle = this.y_for_left_eyebrow_middle
         previousValues.prev_y_for_right_eyebrow_middle = this.y_for_right_eyebrow_middle
+        previousValues.prev_distance_forehead_left = leftForeheadDistance
+        previousValues.prev_distance_forehead_right = rightForeheadDistance
       }
 
       this.currentFrame +=1;
