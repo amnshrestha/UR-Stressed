@@ -10,8 +10,10 @@ class EyeBrowDetector{
       this.currentFrame = 0;// Current frame size
   
       this.firstReading = true;
+      this.firstReadingSurprised = true;
       this.eyebrowsDistanceLengthFactor = 1.05;
       this.eyebrowsEyeLengthFactor = 1.1;
+      this.eyeBrowChangeThreshold = 8
     
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
@@ -19,6 +21,8 @@ class EyeBrowDetector{
         prev_distance_y_right_eyebrow : 0,
         prev_y_for_left_eyebrow_start : 0,
         prev_y_for_right_eyebrow_start : 0,
+        prev_y_for_left_eyebrow_middle : 0,
+        prev_y_for_right_eyebrow_middle : 0,
       }
   
       //Landmark points of interest to eyebrows confused
@@ -42,11 +46,19 @@ class EyeBrowDetector{
       this.eyebrownsLower = false;
       this.confused = false
 
+      //Landmark points of interest to eyebrows surprised
+      this.y_for_left_eyebrow_middle = 0;
+      this.y_for_right_eyebrow_middle = 0;
+      this.x_for_left_eyebrow_middle = 0;
+      this.x_for_right_eyebrow_middle = 0;
+
     }
 
     drawOnCanvas(canvasCtx){
         canvasCtx.fillRect(this.x_for_left_eyebrow_start,this.y_for_left_eyebrow_start,5,5);
         canvasCtx.fillRect(this.x_for_right_eyebrow_start,this.y_for_right_eyebrow_start,5,5);
+        canvasCtx.fillRect(this.x_for_left_eyebrow_middle,this.y_for_left_eyebrow_middle,5,5);
+        canvasCtx.fillRect(this.x_for_right_eyebrow_middle,this.y_for_right_eyebrow_middle,5,5);
     }
     
   
@@ -65,14 +77,24 @@ class EyeBrowDetector{
         //start of left eye corner is 362
         let leftEyeCornerCoordinates = findCoordinates(lm, 362)
         this.y_for_left_eye_corner = leftEyeCornerCoordinates[1]
-        this.const_distance_z_left = leftEyeCornerCoordinates[2]
+        // this.const_distance_z_left = leftEyeCornerCoordinates[2]
 
         //start of right eye corner is 133
         let rightEyeCornerCoordinates = findCoordinates(lm, 133)
         this.y_for_right_eye_corner = rightEyeCornerCoordinates[1];
-        this.const_distance_z_right = rightEyeCornerCoordinates[2]
+        // this.const_distance_z_right = rightEyeCornerCoordinates[2]
 
-        this.const_distance_z_average = (this.const_distance_z_left + this.const_distance_z_right) / 2;
+        //middle of left eyebrow is 334
+        let leftEyebrowMiddleCoordinates = findCoordinates(lm, 334)
+        this.x_for_left_eyebrow_middle = leftEyebrowMiddleCoordinates[0]
+        this.y_for_left_eyebrow_middle = leftEyebrowMiddleCoordinates[1]
+
+        //middle of right eyebrow is 105
+        let rightEyebrowMiddleCoordinates = findCoordinates(lm, 105)
+        this.x_for_right_eyebrow_middle = rightEyebrowMiddleCoordinates[0]
+        this.y_for_right_eyebrow_middle = rightEyebrowMiddleCoordinates[1]
+
+        // this.const_distance_z_average = (this.const_distance_z_left + this.const_distance_z_right) / 2;
 
         if (this.firstReading) {
           this.const_distance_y_left_eyebrow = Math.abs(this.y_for_left_eyebrow_start - this.y_for_left_eye_corner)
@@ -86,8 +108,8 @@ class EyeBrowDetector{
 
     checkForEyebrowConfused(){
   
-      if(this.firstReading === true){
-        this.firstReading = false;
+      if(this.firstReadingSurprised === true){
+        this.firstReadingSurprised = false;
         return;
       }
   
@@ -111,10 +133,6 @@ class EyeBrowDetector{
             // console.log("distance Y is smaller than before");
             this.eyebrownsLower = true;
           }
-
-          // if (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow) {
-          //   console.log("distance Y RIGHT is smaller than before");
-          // }
 
           // if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
           // (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
@@ -145,6 +163,38 @@ class EyeBrowDetector{
         if(this.currentFrame >=10000){
           this.currentFrame = 0;
         }
+    }
+
+    checkForEyebrowSurprised(){
+  
+      if(this.firstReading === true){
+        this.firstReading = false;
+        return;
+      }
+  
+
+      if(this.currentFrame % this.frameSkip == 0){
+        let previousValues = this.previousData;
+
+        //Distance between current and previous middles of eyebrows
+        let leftEyebrowChange = Math.abs(this.y_for_left_eyebrow_middle - previousValues.prev_y_for_left_eyebrow_middle)
+        let rightEyebrowChange = Math.abs(this.y_for_right_eyebrow_middle - previousValues.prev_y_for_right_eyebrow_middle)
+
+        // console.log("left eyebrow: " + leftEyebrowChange);
+        // console.log("right eyebrow: " + rightEyebrowChange);
+
+        if (leftEyebrowChange > this.eyeBrowChangeThreshold && rightEyebrowChange > this.eyeBrowChangeThreshold) {
+          console.log("Eyebrows raised")
+        }
+
+        previousValues.prev_y_for_left_eyebrow_middle = this.y_for_left_eyebrow_middle
+        previousValues.prev_y_for_right_eyebrow_middle = this.y_for_right_eyebrow_middle
+      }
+
+      this.currentFrame +=1;
+      if(this.currentFrame >=10000){
+        this.currentFrame = 0;
+      }
     }
   
 }
@@ -177,7 +227,8 @@ function onResults(results) {
   if(typeof results.faceLandmarks !== 'undefined'){
     eyebrowDetector.startDetect(results.faceLandmarks);
     eyebrowDetector.drawOnCanvas(canvasCtx);
-    eyebrowDetector.checkForEyebrowConfused()
+    // eyebrowDetector.checkForEyebrowConfused()
+    eyebrowDetector.checkForEyebrowSurprised()
   }
 
 
