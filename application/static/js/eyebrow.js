@@ -12,9 +12,10 @@ class EyeBrowDetector{
       this.firstReading = true;
       this.firstReadingSurprised = true;
       this.eyebrowsDistanceLengthFactor = 1.05;
-      this.eyebrowsEyeLengthFactor = 1.1;
+      this.eyebrowsEyeLengthFactor = 1.05;
       this.eyeBrowChangeThreshold = 8;
-      this.foreheadDistanceLengthFactor = 1.05;
+      this.foreheadDistanceLengthFactor = 1.06;
+      this.lipDistanceLengthFactor = 4;
     
       this.previousData = {
         prev_distance_x_eyebrows_start : 0,
@@ -26,6 +27,7 @@ class EyeBrowDetector{
         prev_y_for_right_eyebrow_middle : 0,
         prev_distance_forehead_left : 0,
         prev_distance_forehead_right : 0,
+        prev_distance_lip : 0,
       }
   
       //Landmark points of interest to eyebrows confused
@@ -45,8 +47,8 @@ class EyeBrowDetector{
       this.const_distance_z_right = 0;
       this.const_distance_z_average = 0;
 
-      this.eyebrownsCloser = false;
-      this.eyebrownsLower = false;
+      this.eyebrowsCloser = false;
+      this.eyebrowsLower = false;
       this.confused = false
 
       //Landmark points of interest to eyebrows surprised
@@ -58,6 +60,16 @@ class EyeBrowDetector{
       this.y_for_left_forehead = 0;
       this.y_for_right_forehead = 0;
 
+      //Landmark points of interest to lips surprised
+      this.y_for_upper_lip = 0;
+      this.y_for_lower_lip = 0;
+      this.x_for_upper_lip = 0;
+      this.x_for_lower_lip = 0;
+
+      this.eyebrowsRaised = false;
+      this.lipOpen = false;
+      this.surprised = false;
+
     }
 
     drawOnCanvas(canvasCtx){
@@ -65,6 +77,8 @@ class EyeBrowDetector{
         canvasCtx.fillRect(this.x_for_right_eyebrow_start,this.y_for_right_eyebrow_start,5,5);
         canvasCtx.fillRect(this.x_for_left_eyebrow_middle,this.y_for_left_eyebrow_middle,5,5);
         canvasCtx.fillRect(this.x_for_right_eyebrow_middle,this.y_for_right_eyebrow_middle,5,5);
+        canvasCtx.fillRect(this.x_for_upper_lip, this.y_for_upper_lip, 5, 5);
+        canvasCtx.fillRect(this.x_for_lower_lip, this.y_for_lower_lip, 5, 5);
     }
     
   
@@ -108,6 +122,15 @@ class EyeBrowDetector{
         let rightForeheadCoordinates = findCoordinates(lm, 67)
         this.y_for_right_forehead = rightForeheadCoordinates[1]
 
+        //upper lip is 13, lower lip is 14
+        let upperLipCoordinates = findCoordinates(lm, 13)
+        this.y_for_upper_lip = upperLipCoordinates[1]
+        this.x_for_upper_lip = upperLipCoordinates[0]
+
+        let lowerLipCoordinates = findCoordinates(lm, 14)
+        this.y_for_lower_lip = lowerLipCoordinates[1]
+        this.x_for_lower_lip = lowerLipCoordinates[0]
+
         // this.const_distance_z_average = (this.const_distance_z_left + this.const_distance_z_right) / 2;
 
         if (this.firstReading) {
@@ -115,15 +138,18 @@ class EyeBrowDetector{
           this.const_distance_y_right_eyebrow = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner)
         }
 
-        this.eyebrownsCloser = false
-        this.eyebrownsLower = false
+        this.eyebrowsCloser = false
+        this.eyebrowsLower = false
         this.confused = false
+
+        this.eyebrowsRaised = false
+        this.lipOpen = false
+        this.surprised = false
     }
 
     checkForEyebrowConfused(){
-  
-      if(this.firstReadingSurprised === true){
-        this.firstReadingSurprised = false;
+      if(this.firstReading === true){
+        this.firstReading = false;
         return;
       }
   
@@ -136,26 +162,28 @@ class EyeBrowDetector{
         if(this.currentFrame % this.frameSkip == 0){
           let previousValues = this.previousData;
 
+          // console.log("prev distance: " + previousValues.prev_distance_x_eyebrows_start)
+          // console.log("current distance: " + distance_x_eyebrows_start)
           if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
             // console.log("distance X is smaller than before");
             // console.log("z distance is: " + this.const_distance_z_average)
-            this.eyebrownsCloser = true;
+            this.eyebrowsCloser = true;
           }
 
           if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
-          (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
+          (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
             // console.log("distance Y is smaller than before");
-            this.eyebrownsLower = true;
+            this.eyebrowsLower = true;
           }
 
           // if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
           // (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
           //   console.log("distance Y is smaller than before");
-          //   this.eyebrownsLower = true;
+          //   this.eyebrowsLower = true;
           //   // console.log("z distance is: " + this.const_distance_z_average);
           // }
 
-          if (this.eyebrownsCloser && this.eyebrownsLower) {
+          if (this.eyebrowsCloser && this.eyebrowsLower) {
             console.log("You are confused!")
             this.confused = true
             // console.log("z distance is: " + this.const_distance_z_average)
@@ -179,14 +207,18 @@ class EyeBrowDetector{
         }
     }
 
-    checkForEyebrowSurprised(){
+    checkForSurprise(){
   
-      if(this.firstReading === true){
-        this.firstReading = false;
+      if(this.firstReadingSurprised === true){
+        this.firstReadingSurprised = false;
         return;
       }
+      //Distance between eyebrow and forehead
       let leftForeheadDistance = Math.abs(this.y_for_left_eyebrow_middle - this.y_for_left_forehead)
       let rightForeheadDistance = Math.abs(this.y_for_right_eyebrow_middle - this.y_for_right_forehead)
+
+      //Distance between upper and lower lip
+      let distanceBetweenLips = Math.abs(this.y_for_upper_lip - this.y_for_lower_lip)
 
       if(this.currentFrame % this.frameSkip == 0){
         let previousValues = this.previousData;
@@ -199,16 +231,29 @@ class EyeBrowDetector{
 
         if ((leftForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_left) &&
         (rightForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_right)) {
-          console.log("You are surprised")
+          // console.log("eyebrows raised")
+          // console.log("You are surprised")
+          this.eyebrowsRaised = true;
+        }
+
+        if (previousValues.prev_distance_lip * this.lipDistanceLengthFactor < distanceBetweenLips) {
+          // console.log("Lips are open")
+          this.lipOpen = true;
         }
         // if (leftEyebrowChange > this.eyeBrowChangeThreshold && rightEyebrowChange > this.eyeBrowChangeThreshold) {
         //   console.log("Eyebrows raised")
         // }
 
+        if (this.eyebrowsRaised && this.lipOpen) {
+          this.surprised = true;
+          console.log("You are surprised")
+        }
+
         previousValues.prev_y_for_left_eyebrow_middle = this.y_for_left_eyebrow_middle
         previousValues.prev_y_for_right_eyebrow_middle = this.y_for_right_eyebrow_middle
         previousValues.prev_distance_forehead_left = leftForeheadDistance
         previousValues.prev_distance_forehead_right = rightForeheadDistance
+        previousValues.prev_distance_lip = distanceBetweenLips
       }
 
       this.currentFrame +=1;
@@ -247,8 +292,8 @@ function onResults(results) {
   if(typeof results.faceLandmarks !== 'undefined'){
     eyebrowDetector.startDetect(results.faceLandmarks);
     eyebrowDetector.drawOnCanvas(canvasCtx);
-    // eyebrowDetector.checkForEyebrowConfused()
-    eyebrowDetector.checkForEyebrowSurprised()
+    eyebrowDetector.checkForEyebrowConfused()
+    eyebrowDetector.checkForSurprise()
   }
 
 
