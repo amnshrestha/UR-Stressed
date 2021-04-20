@@ -240,6 +240,65 @@ class SmileDetector{
 
 }
 
+class NodDetector{
+  constructor(){
+    this.imagePoints = []
+    this.imageShape = [0,0]
+  }
+  startDetect(lm){
+      
+    //start of left eyebrow is 336
+    let noseTip = findCoordinates(lm,4);
+    this.x_noseTip = noseTip[0];
+    this.y_noseTip = noseTip[1];
+
+    var toAdd = [this.x_noseTip, this.y_noseTip];
+    this.imagePoints.push(toAdd);
+
+
+    //start of left eyebrow is 336
+    let chin = findCoordinates(lm,175);
+    this.x_chin = chin[0];
+    this.y_chin = chin[1];
+
+    var toAdd = [this.x_chin, this.y_chin];
+    this.imagePoints.push(toAdd);
+
+    //start of left eyebrow is 336
+    let leftEye = findCoordinates(lm,33);
+    this.x_leftEye = leftEye[0];
+    this.y_leftEye = leftEye[1];
+
+    var toAdd = [this.x_leftEye, this.y_leftEye];
+    this.imagePoints.push(toAdd);
+
+    //start of left eyebrow is 336
+    let rightEye = findCoordinates(lm,263);
+    this.x_rightEye = rightEye[0];
+    this.y_rightEye = rightEye[1];
+
+    var toAdd = [this.x_rightEye, this.y_rightEye];
+    this.imagePoints.push(toAdd);
+
+    //start of left eyebrow is 336
+    let leftLip = findCoordinates(lm,291);
+    this.x_leftLip = leftLip[0];
+    this.y_leftLip = leftLip[1];
+
+    var toAdd = [this.x_leftLip, this.y_leftLip];
+    this.imagePoints.push(toAdd);
+
+    //start of left eyebrow is 336
+    let rightLip = findCoordinates(lm,61);
+    this.x_rightLip = rightLip[0];
+    this.y_rightLip = rightLip[1];
+
+    var toAdd = [this.x_rightLip, this.y_rightLip];
+    this.imagePoints.push(toAdd);
+
+  }
+}
+
 class EyeBrowDetector{
 
   constructor(){
