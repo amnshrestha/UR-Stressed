@@ -37,10 +37,12 @@ function onResults(results) {
     eyebrowDetector.startDetect(results.faceLandmarks);
     eyebrowDetector.drawOnCanvas(canvasCtx);
     eyebrowDetector.checkForEyebrowConfused()
+    eyebrowDetector.checkForSurprise() 
   }
  
   if (typeof results.leftHandLandmarks !== 'undefined' || typeof results.rightHandLandmarks !== 'undefined') {
     hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
+    hr.checkforThumbsUp(results.leftHandLandmarks, results.rightHandLandmarks);
   }
 
   if (typeof results.faceLandmarks !== 'undefined'){
@@ -219,7 +221,7 @@ class SmileDetector{
         var previousValues = this.previousData;
         if(dLips > (previousValues.lengthOfLip * this.smileLengthFactor) && 
           dLLTLChinC > previousValues.dleftLipToLeftChin &&
-          dRLTRChinC > previousValues.drightLipToRightChin
+          dRLTRChinC > previousValues.drightLipToRightChin && !eyebrowDetector.surprised
           ){
             console.log("You Smiled");
             socket.emit('smile', "I smiled");
@@ -311,12 +313,17 @@ class NodDetector{
 class EyeBrowDetector{
 
   constructor(){
-    this.frameSkip = 5;// allow frame skip
-    this.currentFrame = 0;// Current frame size
+    this.frameSkip = 10;// allow frame skip
+    this.currentFrameConfused = 0;// Current frame size
+    this.currentFrameSurprised = 0;
 
     this.firstReading = true;
-    this.eyebrowsDistanceLengthFactor = 1.02;
-    this.eyebrowsEyeLengthFactor = 1.02
+    this.firstReadingSurprised = true;
+    this.eyebrowsDistanceLengthFactor = 1.05;
+    this.eyebrowsEyeLengthFactor = 1.05;
+    this.eyeBrowChangeThreshold = 8;
+    this.foreheadDistanceLengthFactor = 1.06;
+    this.lipDistanceLengthFactor = 4;
   
     this.previousData = {
       prev_distance_x_eyebrows_start : 0,
@@ -324,6 +331,12 @@ class EyeBrowDetector{
       prev_distance_y_right_eyebrow : 0,
       prev_y_for_left_eyebrow_start : 0,
       prev_y_for_right_eyebrow_start : 0,
+      prev_y_for_left_eyebrow_middle : 0,
+      prev_y_for_right_eyebrow_middle : 0,
+      prev_distance_forehead_left : 0,
+      prev_distance_forehead_right : 0,
+      prev_distance_lip : 0,
+      surprised: false,
     }
 
     //Landmark points of interest to eyebrows confused
@@ -339,15 +352,42 @@ class EyeBrowDetector{
     this.const_distance_y_left_eyebrow = 0;
     this.const_distance_y_right_eyebrow = 0;
 
-    this.eyebrownsCloser = false;
-    this.eyebrownsLower = false;
+    this.const_distance_z_left = 0;
+    this.const_distance_z_right = 0;
+    this.const_distance_z_average = 0;
+
+    this.eyebrowsCloser = false;
+    this.eyebrowsLower = false;
     this.confused = false
+
+    //Landmark points of interest to eyebrows surprised
+    this.y_for_left_eyebrow_middle = 0;
+    this.y_for_right_eyebrow_middle = 0;
+    this.x_for_left_eyebrow_middle = 0;
+    this.x_for_right_eyebrow_middle = 0;
+
+    this.y_for_left_forehead = 0;
+    this.y_for_right_forehead = 0;
+
+    //Landmark points of interest to lips surprised
+    this.y_for_upper_lip = 0;
+    this.y_for_lower_lip = 0;
+    this.x_for_upper_lip = 0;
+    this.x_for_lower_lip = 0;
+
+    this.eyebrowsRaised = false;
+    this.lipOpen = false;
+    this.surprised = false;
 
   }
 
   drawOnCanvas(canvasCtx){
       canvasCtx.fillRect(this.x_for_left_eyebrow_start,this.y_for_left_eyebrow_start,5,5);
       canvasCtx.fillRect(this.x_for_right_eyebrow_start,this.y_for_right_eyebrow_start,5,5);
+      canvasCtx.fillRect(this.x_for_left_eyebrow_middle,this.y_for_left_eyebrow_middle,5,5);
+      canvasCtx.fillRect(this.x_for_right_eyebrow_middle,this.y_for_right_eyebrow_middle,5,5);
+      canvasCtx.fillRect(this.x_for_upper_lip, this.y_for_upper_lip, 5, 5);
+      canvasCtx.fillRect(this.x_for_lower_lip, this.y_for_lower_lip, 5, 5);
   }
   
 
@@ -366,23 +406,60 @@ class EyeBrowDetector{
       //start of left eye corner is 362
       let leftEyeCornerCoordinates = findCoordinates(lm, 362)
       this.y_for_left_eye_corner = leftEyeCornerCoordinates[1]
+      // this.const_distance_z_left = leftEyeCornerCoordinates[2]
 
       //start of right eye corner is 133
       let rightEyeCornerCoordinates = findCoordinates(lm, 133)
       this.y_for_right_eye_corner = rightEyeCornerCoordinates[1];
+      // this.const_distance_z_right = rightEyeCornerCoordinates[2]
+
+      //middle of left eyebrow is 334
+      let leftEyebrowMiddleCoordinates = findCoordinates(lm, 334)
+      this.x_for_left_eyebrow_middle = leftEyebrowMiddleCoordinates[0]
+      this.y_for_left_eyebrow_middle = leftEyebrowMiddleCoordinates[1]
+
+      //middle of right eyebrow is 105
+      let rightEyebrowMiddleCoordinates = findCoordinates(lm, 105)
+      this.x_for_right_eyebrow_middle = rightEyebrowMiddleCoordinates[0]
+      this.y_for_right_eyebrow_middle = rightEyebrowMiddleCoordinates[1]
+
+      //left forehead is 297
+      let leftForeheadCoordinates = findCoordinates(lm, 297)
+      this.y_for_left_forehead = leftForeheadCoordinates[1]
+
+      //right forehead is 67
+      let rightForeheadCoordinates = findCoordinates(lm, 67)
+      this.y_for_right_forehead = rightForeheadCoordinates[1]
+
+      //upper lip is 13, lower lip is 14
+      let upperLipCoordinates = findCoordinates(lm, 13)
+      this.y_for_upper_lip = upperLipCoordinates[1]
+      this.x_for_upper_lip = upperLipCoordinates[0]
+
+      let lowerLipCoordinates = findCoordinates(lm, 14)
+      this.y_for_lower_lip = lowerLipCoordinates[1]
+      this.x_for_lower_lip = lowerLipCoordinates[0]
+
+      // this.const_distance_z_average = (this.const_distance_z_left + this.const_distance_z_right) / 2;
 
       if (this.firstReading) {
         this.const_distance_y_left_eyebrow = Math.abs(this.y_for_left_eyebrow_start - this.y_for_left_eye_corner)
         this.const_distance_y_right_eyebrow = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner)
       }
 
-      this.eyebrownsCloser = false
-      this.eyebrownsLower = false
+      this.eyebrowsCloser = false
+      this.eyebrowsLower = false
       this.confused = false
+
+      this.eyebrowsRaised = false
+      this.lipOpen = false
+      // if (this.previousData.surprised == false) {
+      //   this.surprised = false
+      // }
+      this.surprised = false
   }
 
   checkForEyebrowConfused(){
-
     if(this.firstReading === true){
       this.firstReading = false;
       return;
@@ -394,60 +471,109 @@ class EyeBrowDetector{
     let distance_y_right_eyebrows = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner);
   //   let distance_y_right_eyebrows = Math.abs(this.y.x_for_right_eyebrow_start - this.previousData.prev_y_for_right_eyebrow_start);
 
-      if(this.currentFrame % this.frameSkip == 0){
+      if(this.currentFrameConfused % this.frameSkip == 0){
         let previousValues = this.previousData;
 
+        // console.log("prev distance: " + previousValues.prev_distance_x_eyebrows_start)
+        // console.log("current distance: " + distance_x_eyebrows_start)
         if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
           // console.log("distance X is smaller than before");
-          this.eyebrownsCloser = true;
+          // console.log("z distance is: " + this.const_distance_z_average)
+          this.eyebrowsCloser = true;
         }
 
-        // if (distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) {
-        //   console.log("distance Y LEFT is smaller than before");
-        // }
-
-        // if (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow) {
-        //   console.log("distance Y RIGHT is smaller than before");
-        // }
-
-        if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
-        (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
+        if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
+        (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
           // console.log("distance Y is smaller than before");
-          this.eyebrownsLower = true
+          this.eyebrowsLower = true;
         }
 
-        if (this.eyebrownsCloser && this.eyebrownsLower) {
-          console.log("You are confused!")
-          socket.emit('confused', "I am confused");
-          this.confused = true
-        }
-
-        // if (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow) {
-        //   console.log("distance Y RIGHT is smaller than before");
+        // if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
+        // (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
+        //   console.log("distance Y is smaller than before");
+        //   this.eyebrowsLower = true;
+        //   // console.log("z distance is: " + this.const_distance_z_average);
         // }
+
+        if (this.eyebrowsCloser && this.eyebrowsLower && !previousValues.surprised) {
+          console.log("You are confused!");
+          socket.emit('confused', "I am confused");
+          this.confused = true;
+          // console.log("z distance is: " + this.const_distance_z_average)
+        }
+
+    
         // if ((distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
         // (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
         //   console.log("distance Y is smaller than before");
         // }
-        
-        
-      //   if((distance_x_eyebrows_start < previousValues.prev_distance_x_eyebrows_start) && 
-      //     ((this.y_for_left_eyebrow_start < previousValues.prev_y_for_left_eyebrow_start) || (this.y_for_right_eyebrow_start < previousValues.prev_y_for_right_eyebrow_start))
-      //     ){
-      //       console.log("Your eyebrows confused");
-      //       socket.emit('eyebrows confused', "I'm confused");
-      //     }
-
+       
         previousValues.prev_distance_x_eyebrows_start = distance_x_eyebrows_start;
         previousValues.prev_y_for_left_eyebrow_start = this.y_for_left_eyebrow_start
         previousValues.prev_y_for_right_eyebrow_start = this.y_for_right_eyebrow_start
         previousValues.prev_distance_y_left_eyebrow = distance_y_left_eyebrows
         previousValues.prev_distance_y_right_eyebrow = distance_y_right_eyebrows
       }
-      this.currentFrame +=1;
-      if(this.currentFrame >=10000){
-        this.currentFrame = 0;
+      this.currentFrameConfused +=1;
+      if(this.currentFrameConfused >=10000){
+        this.currentFrameConfused = 0;
       }
+  }
+
+  checkForSurprise(){
+    if(this.firstReadingSurprised === true){
+      this.firstReadingSurprised = false;
+      return;
+    }
+    //Distance between eyebrow and forehead
+    let leftForeheadDistance = Math.abs(this.y_for_left_eyebrow_middle - this.y_for_left_forehead)
+    let rightForeheadDistance = Math.abs(this.y_for_right_eyebrow_middle - this.y_for_right_forehead)
+
+    //Distance between upper and lower lip
+    let distanceBetweenLips = Math.abs(this.y_for_upper_lip - this.y_for_lower_lip)
+
+    if(this.currentFrameSurprised % this.frameSkip == 0){
+      let previousValues = this.previousData;
+      // console.log("check for surprised");
+      //Distance between current and previous middles of eyebrows
+      // let leftEyebrowChange = Math.abs(this.y_for_left_eyebrow_middle - previousValues.prev_y_for_left_eyebrow_middle)
+      // let rightEyebrowChange = Math.abs(this.y_for_right_eyebrow_middle - previousValues.prev_y_for_right_eyebrow_middle)
+      // console.log("left eyebrow: " + leftEyebrowChange);
+      // console.log("right eyebrow: " + rightEyebrowChange);
+
+      if ((leftForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_left) &&
+      (rightForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_right)) {
+        // console.log("eyebrows raised")
+        // console.log("You are surprised")
+        this.eyebrowsRaised = true;
+      }
+
+      if (previousValues.prev_distance_lip * this.lipDistanceLengthFactor < distanceBetweenLips) {
+        // console.log("Lips are open")
+        this.lipOpen = true;
+      }
+      // if (leftEyebrowChange > this.eyeBrowChangeThreshold && rightEyebrowChange > this.eyeBrowChangeThreshold) {
+      //   console.log("Eyebrows raised")
+      // }
+
+      if (this.eyebrowsRaised && this.lipOpen) {
+        this.surprised = true;
+        console.log("You are surprised");
+        socket.emit('surprised', "I am surprised");
+      }
+
+      previousValues.prev_y_for_left_eyebrow_middle = this.y_for_left_eyebrow_middle
+      previousValues.prev_y_for_right_eyebrow_middle = this.y_for_right_eyebrow_middle
+      previousValues.prev_distance_forehead_left = leftForeheadDistance
+      previousValues.prev_distance_forehead_right = rightForeheadDistance
+      previousValues.prev_distance_lip = distanceBetweenLips
+      previousValues.surprised = this.surprised
+    }
+
+    this.currentFrameSurprised +=1;
+    if(this.currentFrameSurprised >=10000){
+      this.currentFrameSurprised = 0;
+    }
   }
 
 }
@@ -455,8 +581,12 @@ class EyeBrowDetector{
 class HandRaised {
   constructor() {
     this.skipFrame = 10;
-    this.frameCounter = 0;
+    this.frameCounterHandRaise = 0;
+    this.frameCounterThumbsUp = 0;
     this.minY = 0;
+    this.thumbsLengthFactor = 1.2;
+    this.thumbsCloseFactor = 1.02;
+    this.thumbsUp = false;
   }
 
   checkForPalm(hand) {
@@ -474,7 +604,7 @@ class HandRaised {
   }
 
   checkForHand(leftHand, rightHand, face) {
-    if (this.frameCounter % this.skipFrame === 0) {
+    if (this.frameCounterHandRaise % this.skipFrame === 0) {
       this.minY = this.getMinFaceY(face);
       let palm = false;
       if (leftHand !== undefined) {
@@ -486,15 +616,84 @@ class HandRaised {
       
       if (palm) { 
         console.log('You raised your hand'); 
-        socket.emit('handraise', "I raised my hand");
-
+        socket.emit('handraised', "I raised my hand");
       } // eslint-disable-line}
     }
+    this.frameCounterHandRaise++;
+    if (this.frameCounterHandRaise >= 10000){
+      this.frameCounterHandRaise = 0;
+    }
+  }
+
+  checkforThumbsUp(leftHand, rightHand) {
+    if (this.frameCounterThumbsUp % this.skipFrame === 0) {
+      let rightHandThumbsUp = this.checkforOneHandThumbsUp(rightHand);
+      // let leftHandThumbsUp = this.checkforOneHandThumbsUp(leftHand);
+      if (rightHandThumbsUp) {
+        console.log("Thumbs up");
+        this.thumbsUp = true;
+        socket.emit('thumbsup', "my right hand thumbs up");
+      }
+      // if (rightHandThumbsUp || leftHandThumbsUp) {
+      //   this.thumbsUp = true;
+      //   console.log("Thumbs up");
+      // }
+    }
+    this.frameCounterThumbsUp++;
+    if (this.frameCounterThumbsUp >= 10000){
+      this.frameCounterThumbsUp = 0;
+    }
+  }
+
+  checkforOneHandThumbsUp(targetHand) {
     
-    this.frameCounter++;
+    //finger tip coordinates
+    let y_rightThumbTip = findCoordinates(targetHand, 4)[1];
+    let x_rightIndexTip = findCoordinates(targetHand, 8)[0];
+    let x_rightMiddleTip = findCoordinates(targetHand, 12)[0];
+    let x_rightRingTip = findCoordinates(targetHand, 16)[0];
+    let x_rightPinkyTip = findCoordinates(targetHand, 20)[0];
+
+    //finger MCP coordinates
+    let y_rightIndexMCP = findCoordinates(targetHand, 5)[1];
+    let y_rightMiddleMCP = findCoordinates(targetHand, 9)[1];
+    let y_rightRingMCP = findCoordinates(targetHand, 13)[1];
+    let y_rightPinkyMCP = findCoordinates(targetHand, 17)[1];
+
+    //finger PIP coordinates
+    let x_rightIndexPIP = findCoordinates(targetHand, 6)[0];
+    let x_rightMiddlePIP = findCoordinates(targetHand, 10)[0];
+    let x_rightRingPIP = findCoordinates(targetHand, 14)[0];
+    let x_rightPinkyPIP = findCoordinates(targetHand, 19)[0];
+  
+    let y_thumbsUp = false;
+    if (y_rightThumbTip * this.thumbsLengthFactor < y_rightIndexMCP && 
+      y_rightIndexMCP < y_rightMiddleMCP && 
+      y_rightMiddleMCP  < y_rightRingMCP && 
+      y_rightRingMCP < y_rightPinkyMCP) {
+        // console.log("thumb higher");
+        y_thumbsUp = true;
+    }
+    let x_thumbsUp = false;
+    if (x_rightIndexTip * this.thumbsCloseFactor < x_rightIndexPIP &&
+      x_rightMiddleTip * this.thumbsCloseFactor < x_rightMiddlePIP &&
+      x_rightRingTip * this.thumbsCloseFactor < x_rightRingPIP &&
+      x_rightPinkyTip * this.thumbsCloseFactor < x_rightPinkyPIP) 
+    {
+      // console.log("hand close");
+      x_thumbsUp = true;
+    }
+
+    if (y_thumbsUp && x_thumbsUp) {
+      // console.log("One hand Thumbs up");
+      return true;
+    }
+    return false;
+    
   }
 
 }
+
 
 const sd = new SmileDetector();
 const eyebrowDetector = new EyeBrowDetector();

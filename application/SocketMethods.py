@@ -26,15 +26,15 @@ def instructorView():
 
 # Commented in case we need to fix this individually later
 # Currently, the code in main.js is same as individual hand and eyebrow code combined
-# @app.route('/hand')
-# def hand():
-#     """Recognize Hand page."""
-#     return render_template('hand.html')
+@app.route('/hand')
+def hand():
+    """Recognize Hand page."""
+    return render_template('hand.html')
 
-# @app.route('/eyebrow')
-# def eyebrow():
-#     """Recognize Eyebrow page."""
-#     return render_template('eyebrow.html')
+@app.route('/eyebrow')
+def eyebrow():
+    """Recognize Eyebrow page."""
+    return render_template('eyebrow.html')
 
 @socketio.on('connect', namespace='/web')
 def connect_web():
