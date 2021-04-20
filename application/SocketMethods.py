@@ -1,15 +1,17 @@
 from flask import Flask, render_template, Response,request
 from application import app
 
-from application.pythonClasses import Session
+from application.pythonClasses import Session, HeadMovementDetection
 
 from flask_socketio import SocketIO, send
 
 # from session import Session
 
-socketio = SocketIO(app)
+socketio = SocketIO(app, logger = False)
 
 sessionOne = Session()
+
+detectorDict = {}
 
 @app.route('/')
 def index():
@@ -37,7 +39,26 @@ def instructorView():
 @socketio.on('connect', namespace='/web')
 def connect_web():
     print('[INFO] Web client connected: {}'.format(request.sid))
+    
+    headNodDetector = HeadMovementDetection()
+    detectorDict[request.sid] = headNodDetector
+
     socketio.emit('message','Message is being sent', namespace='/web')
+
+@socketio.on('nodDetection', namespace='/web')
+def nod_detector(dataSent):
+    print('[INFO] Data from: {}'.format(request.sid))
+    headNodDetector = detectorDict[request.sid]
+    imagePoints = dataSent['imagePoints']
+    imageShape = dataSent['imageShape']
+    headNodDetector.setValues(imagePoints, imageShape)
+    headNodded, saidNo = headNodDetector.calculate()
+    if(headNodded):
+        socketio.emit('headnod',"HeadNodded", namespace='/web')
+    if(saidNo):
+        socketio.emit('saidno',"SaidNo", namespace='/web')
+    # socketio.emit('smileResponse',sessionOne.getTotalSmiling(), namespace='/web')
+
 
 @socketio.on('smile', namespace='/web')
 def smile_detected(id):
@@ -46,6 +67,9 @@ def smile_detected(id):
     sessionOne.increaseSmile()
     print(sessionOne.getTotalSmiling())
     socketio.emit('smileResponse',sessionOne.getTotalSmiling(), namespace='/web')
+
+
+
 
 @socketio.on('confused', namespace='/web')
 def confuse_detected(id):

@@ -43,6 +43,10 @@ function onResults(results) {
     hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
   }
 
+  if (typeof results.faceLandmarks !== 'undefined'){
+    nd.startDetect(results.faceLandmarks);
+  }
+
   
 
 
@@ -246,6 +250,7 @@ class NodDetector{
     this.imageShape = [0,0]
   }
   startDetect(lm){
+    this.imagePoints = [];
       
     //start of left eyebrow is 336
     let noseTip = findCoordinates(lm,4);
@@ -295,6 +300,10 @@ class NodDetector{
 
     var toAdd = [this.x_rightLip, this.y_rightLip];
     this.imagePoints.push(toAdd);
+
+    socket.emit('nodDetection', {imagePoints: this.imagePoints, imageShape: [canvasElement.height,canvasElement.width]});
+
+    // console.log(this.imagePoints);
 
   }
 }
@@ -490,6 +499,7 @@ class HandRaised {
 const sd = new SmileDetector();
 const eyebrowDetector = new EyeBrowDetector();
 const hr = new HandRaised();
+const nd = new NodDetector();
 
 
 

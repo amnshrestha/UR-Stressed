@@ -23,3 +23,11 @@ socket.on('raiseHandResponse', function(newHandRaiseCount) {
     $("#totalRaisedHand").text(newHandRaiseCount+ " people seem to have raised their hands")
     console.log('hand raise detected!');
 });
+
+socket.on('headnod', function(message) {
+    $("#headNod").text($("#headNod").text() + message)
+});
+
+socket.on('saidno', function(message) {
+    $("#saidNo").text($("#saidNo").text() + message)
+});
