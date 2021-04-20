@@ -183,7 +183,7 @@ class EyeBrowDetector{
           //   // console.log("z distance is: " + this.const_distance_z_average);
           // }
 
-          if (this.eyebrowsCloser && this.eyebrowsLower) {
+          if (this.eyebrowsCloser && this.eyebrowsLower && !this.surprised) {
             console.log("You are confused!")
             this.confused = true
             // console.log("z distance is: " + this.const_distance_z_average)

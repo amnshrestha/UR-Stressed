@@ -17,6 +17,7 @@ class HandRaised {
     this.skipFrame = 10;
     this.frameCounter = 0;
     this.minY = 0;
+    this.thumbsLengthFactor = 1.2;
   }
 
   checkForPalm(hand) {
@@ -46,8 +47,40 @@ class HandRaised {
       
       if (palm) { console.log('You raised your hand'); } // eslint-disable-line}
     }
-    
     this.frameCounter++;
+    if (this.frameCounter >= 10000){
+      this.frameCounter = 0;
+    }
+  }
+
+  checkforThumbsUp(leftHand, rightHand) {
+    // console.log("check for thumbs up...");
+    if (this.frameCounter % this.skipFrame === 0) {
+      let y_rightThumbTip = findCoordinates(rightHand, 4)[1];
+      let y_rightIndexTip = findCoordinates(rightHand, 8)[1];
+      let y_rightMiddleTip = findCoordinates(rightHand, 12)[1];
+      let y_rightRingTip = findCoordinates(rightHand, 16)[1];
+      let y_rightPinkyTip = findCoordinates(rightHand, 20)[1];
+
+      let y_rightIndexMCP = findCoordinates(rightHand, 5)[1];
+      let y_rightMiddleMCP = findCoordinates(rightHand, 9)[1];
+      let y_rightRingMCP = findCoordinates(rightHand, 13)[1];
+      let y_rightPinkyMCP = findCoordinates(rightHand, 17)[1];
+    
+      // if (y_rightThumbTip * this.thumbsLengthFactor < y_rightIndexMCP) {
+      //   console.log("Thumps higher");
+      // }
+      if (y_rightThumbTip * this.thumbsLengthFactor < y_rightIndexMCP && 
+        y_rightIndexMCP < y_rightMiddleMCP && 
+        y_rightMiddleMCP  < y_rightRingMCP && 
+        y_rightRingMCP < y_rightPinkyMCP) {
+          console.log("Right hand Thumbs up")
+      }
+    }
+    this.frameCounter++;
+    if (this.frameCounter >= 10000){
+      this.frameCounter = 0;
+    }
   }
 
 }
@@ -75,7 +108,8 @@ function onResults(results) {
                 {color: '#FF0000', lineWidth: 2});
 
   if (typeof results.leftHandLandmarks !== 'undefined' || typeof results.rightHandLandmarks !== 'undefined') {
-    hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
+    // hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
+    hr.checkforThumbsUp(results.leftHandLandmarks, results.rightHandLandmarks)
   }
   canvasCtx.restore();
 }
