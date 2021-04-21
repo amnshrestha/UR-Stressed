@@ -2,15 +2,18 @@ const videoElement = document.getElementsByClassName('input_video')[0];
 const canvasElement = document.getElementsByClassName('output_canvas')[0];
 const canvasCtx = canvasElement.getContext('2d');
 
-
+let IS_SMILING = false;
+let IS_CONFUSED = false;
+let IS_HAND_RAISED = false;
+const MAX_FRAMES = 10000;
 
 function onResults(results) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   canvasCtx.drawImage(
-      results.image, 0, 0, canvasElement.width, canvasElement.height);
+    results.image, 0, 0, canvasElement.width, canvasElement.height);
 
-      // Commented the following to Remove unnecessary drawings
+  // Commented the following to Remove unnecessary drawings
 
   // drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS,
   //                {color: '#00FF00', lineWidth: 4});
@@ -27,19 +30,23 @@ function onResults(results) {
   // drawLandmarks(canvasCtx, results.rightHandLandmarks,
   //               {color: '#FF0000', lineWidth: 2});
 
-  if(typeof results.faceLandmarks !== 'undefined'){
+  if (typeof results.faceLandmarks !== 'undefined') {
     sd.startDetect(results.faceLandmarks);
     sd.drawOnCanvas(canvasCtx);
     sd.checkForSmile();
+  } else {
+    IS_SMILING = false;
   }
 
-  if(typeof results.faceLandmarks !== 'undefined'){
+  if (typeof results.faceLandmarks !== 'undefined') {
     eyebrowDetector.startDetect(results.faceLandmarks);
     eyebrowDetector.drawOnCanvas(canvasCtx);
     eyebrowDetector.checkForEyebrowConfused()
     eyebrowDetector.checkForSurprise() 
+  } else {
+    IS_CONFUSED = false;
   }
- 
+
   if (typeof results.leftHandLandmarks !== 'undefined' || typeof results.rightHandLandmarks !== 'undefined') {
     hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
     hr.checkforThumbsUp(results.leftHandLandmarks, results.rightHandLandmarks);
@@ -47,23 +54,26 @@ function onResults(results) {
 
   if (typeof results.faceLandmarks !== 'undefined'){
     nd.startDetect(results.faceLandmarks);
+  } else {
+    // console.log('something'); // eslint-disable-line
+    IS_HAND_RAISED = false;
   }
 
-  
-
-
   //Use this to find coordinates
-    // for (var i =0;i<results.faceLandmarks.length;i++){
-    //   var testc = findCoordinates(results.faceLandmarks,i);
-    //   canvasCtx.fillText(i, testc[0],testc[1]);
-    // }
+  // for (var i =0;i<results.faceLandmarks.length;i++){
+  //   var testc = findCoordinates(results.faceLandmarks,i);
+  //   canvasCtx.fillText(i, testc[0],testc[1]);
+  // }
 
   canvasCtx.restore();
 }
 
-const holistic = new Holistic({locateFile: (file) => {
-  return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
-}});
+const holistic = new Holistic({
+  locateFile: (file) => {
+    return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
+  }
+});
+
 holistic.setOptions({
   upperBodyOnly: false,
   smoothLandmarks: true,
@@ -74,7 +84,9 @@ holistic.onResults(onResults);
 
 const camera = new Camera(videoElement, {
   onFrame: async () => {
-    await holistic.send({image: videoElement});
+    await holistic.send({
+      image: videoElement
+    });
   },
   width: 1280,
   height: 720
@@ -82,19 +94,15 @@ const camera = new Camera(videoElement, {
 camera.start();
 
 
-
-
 let namespace = "/web";
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
-    console.log('Connected!');
+  console.log('Connected!');
 });
-
-
 
 // Written by Aman
 // Finds x,y coordinate of a landmark
-function findCoordinates(toEnumerate, idToFind){
+function findCoordinates(toEnumerate, idToFind) {
   var width = canvasElement.width;
   var height = canvasElement.height;
   var cx = parseInt(toEnumerate[idToFind].x * width);
@@ -102,21 +110,17 @@ function findCoordinates(toEnumerate, idToFind){
   return [cx, cy];
 }
 
-
-
-class SmileDetector{
-
-  constructor(){
-    this.frameSkip = 5;// allow frame skip
-    this.currentFrame = 0;// Current frame size
+class SmileDetector {
+  constructor() {
+    this.frameSkip = 5; // allow frame skip
+    this.currentFrame = 0; // Current frame size
 
     this.firstReading = true;
     this.smileLengthFactor = 1.1;
-
-    this.smiling = false;
+    this.endSmileFactor = .9;
 
     this.previousData = {
-      lengthOfLip : 0,
+      lengthOfLip: 0,
       dleftLipToLeftCorner: 0,
       dleftLipToLeftChin: 0,
       drightLipToRightCorner: 0,
@@ -137,84 +141,78 @@ class SmileDetector{
     this.y_for_right_face_corner = 0;
   }
 
-  startDetect(lm){
-     //291 and 61 are for lip corners
-    var leftLipcornerCoordinates = findCoordinates(lm,291);
+  startDetect(lm) {
+    //291 and 61 are for lip corners
+    var leftLipcornerCoordinates = findCoordinates(lm, 291);
     this.x_for_left_lip_corner = leftLipcornerCoordinates[0];
     this.y_for_left_lip_corner = leftLipcornerCoordinates[1];
 
-    var rightLipcornerCoordinates = findCoordinates(lm,61);
+    var rightLipcornerCoordinates = findCoordinates(lm, 61);
     this.x_for_right_lip_corner = rightLipcornerCoordinates[0];
     this.y_for_right_lip_corner = rightLipcornerCoordinates[1];
 
-    var leftFaceCorner = findCoordinates(lm,58);
+    var leftFaceCorner = findCoordinates(lm, 58);
     this.x_for_left_face_corner = leftFaceCorner[0];
     this.y_for_left_face_corner = leftFaceCorner[1];
 
-    var rightFaceCorner = findCoordinates(lm,288);
+    var rightFaceCorner = findCoordinates(lm, 288);
     this.x_for_right_face_corner = rightFaceCorner[0];
     this.y_for_right_face_corner = rightFaceCorner[1];
 
-    var leftChinCorner = findCoordinates(lm,149);
+    var leftChinCorner = findCoordinates(lm, 149);
     this.x_for_left_chin_corner = leftChinCorner[0];
     this.y_for_left_chin_corner = leftChinCorner[1];
 
-    var rightChinCorner = findCoordinates(lm,378);
+    var rightChinCorner = findCoordinates(lm, 378);
     this.x_for_right_chin_corner = rightChinCorner[0];
     this.y_for_right_chin_corner = rightChinCorner[1];
   }
 
-  drawOnCanvas(canvasCtx){
-    canvasCtx.fillRect(this.x_for_left_lip_corner,this.y_for_left_lip_corner,5,5);
-    canvasCtx.fillRect(this.x_for_right_lip_corner,this.y_for_right_lip_corner,5,5);
+  drawOnCanvas(canvasCtx) {
+    canvasCtx.fillRect(this.x_for_left_lip_corner, this.y_for_left_lip_corner, 5, 5);
+    canvasCtx.fillRect(this.x_for_right_lip_corner, this.y_for_right_lip_corner, 5, 5);
 
-    canvasCtx.fillRect(this.x_for_left_face_corner,this.y_for_left_face_corner,5,5);
-    canvasCtx.fillRect(this.x_for_right_face_corner,this.y_for_right_face_corner,5,5);
+    canvasCtx.fillRect(this.x_for_left_face_corner, this.y_for_left_face_corner, 5, 5);
+    canvasCtx.fillRect(this.x_for_right_face_corner, this.y_for_right_face_corner, 5, 5);
 
-    canvasCtx.fillRect(this.x_for_left_chin_corner,this.y_for_left_chin_corner,5,5);
-    canvasCtx.fillRect(this.x_for_right_chin_corner,this.y_for_right_chin_corner,5,5);
+    canvasCtx.fillRect(this.x_for_left_chin_corner, this.y_for_left_chin_corner, 5, 5);
+    canvasCtx.fillRect(this.x_for_right_chin_corner, this.y_for_right_chin_corner, 5, 5);
   }
 
-  checkForSmile(){
-
-    if(this.firstReading === true){
+  checkForSmile() {
+    if (this.firstReading === true) {
       this.firstReading = false;
       return;
     }
 
     //Distance between ends of lips
-    var dLips = Math.sqrt( 
-      Math.pow((this.x_for_left_lip_corner-this.x_for_right_lip_corner), 2) 
-      + 
-      Math.pow((this.y_for_left_lip_corner-this.y_for_right_lip_corner), 2) 
+    var dLips = Math.sqrt(
+      Math.pow((this.x_for_left_lip_corner - this.x_for_right_lip_corner), 2) +
+      Math.pow((this.y_for_left_lip_corner - this.y_for_right_lip_corner), 2)
     );
 
     //distance Left Lip To Left Corner
-    var dLLTLFaceC = Math.sqrt( 
-      Math.pow((this.x_for_left_lip_corner-this.x_for_left_face_corner), 2) 
-      + 
-      Math.pow((this.y_for_left_lip_corner-this.y_for_left_face_corner), 2) 
+    var dLLTLFaceC = Math.sqrt(
+      Math.pow((this.x_for_left_lip_corner - this.x_for_left_face_corner), 2) +
+      Math.pow((this.y_for_left_lip_corner - this.y_for_left_face_corner), 2)
     );
 
     //distance Left Lip To Left Chin
-    var dLLTLChinC = Math.sqrt( 
-      Math.pow((this.x_for_left_lip_corner-this.x_for_left_chin_corner), 2) 
-      + 
-      Math.pow((this.y_for_left_lip_corner-this.y_for_left_chin_corner), 2) 
+    var dLLTLChinC = Math.sqrt(
+      Math.pow((this.x_for_left_lip_corner - this.x_for_left_chin_corner), 2) +
+      Math.pow((this.y_for_left_lip_corner - this.y_for_left_chin_corner), 2)
     );
-    
-     //distance Right Lip To Right Corner
-     var dRLTRFaceC = Math.sqrt( 
-      Math.pow((this.x_for_right_lip_corner-this.x_for_right_face_corner), 2) 
-      + 
-      Math.pow((this.y_for_right_lip_corner-this.y_for_right_face_corner), 2) 
+
+    //distance Right Lip To Right Corner
+    var dRLTRFaceC = Math.sqrt(
+      Math.pow((this.x_for_right_lip_corner - this.x_for_right_face_corner), 2) +
+      Math.pow((this.y_for_right_lip_corner - this.y_for_right_face_corner), 2)
     );
 
     //distance Right Lip To Right Chin
-    var dRLTRChinC = Math.sqrt( 
-      Math.pow((this.x_for_right_lip_corner-this.x_for_right_chin_corner), 2) 
-      + 
-      Math.pow((this.y_for_right_lip_corner-this.y_for_right_chin_corner), 2) 
+    var dRLTRChinC = Math.sqrt(
+      Math.pow((this.x_for_right_lip_corner - this.x_for_right_chin_corner), 2) +
+      Math.pow((this.y_for_right_lip_corner - this.y_for_right_chin_corner), 2)
     );
 
       if(this.currentFrame % this.frameSkip == 0){
@@ -233,17 +231,36 @@ class SmileDetector{
         previousValues.drightLipToRightCorner = dRLTRFaceC;
         previousValues.drightLipToRightChin = dRLTRChinC;
 
-       
+    // if (this.currentFrame % this.frameSkip == 0) {
+    //   var previousValues = this.previousData;
+    //   if (dLips > (previousValues.lengthOfLip * this.smileLengthFactor) &&
+    //     dLLTLChinC > previousValues.dleftLipToLeftChin &&
+    //     dRLTRChinC > previousValues.drightLipToRightChin
+    //   ) {
+    //     if (!IS_SMILING) {
+    //       console.log('add smile'); // eslint-disable-line
+    //       socket.emit('smile', { value: 1 });
+    //     }
+    //     IS_SMILING = true;
+    //   }
 
+    //   if (dLips < (previousValues.lengthOfLip * this.endSmileFactor) &&
+    //     dLLTLChinC < previousValues.dleftLipToLeftChin &&
+    //     dRLTRChinC < previousValues.drightLipToRightChin
+    //   ) {
+    //     if (IS_SMILING) {
+    //       console.log('remove smile'); // eslint-disable-line
+    //       socket.emit('smile', { value: -1 });
+    //     }
+    //     IS_SMILING = false;
+    //   }
+    }
 
-      }
-      this.currentFrame +=1;
-      if(this.currentFrame >=10000){
-        this.currentFrame = 0;
-      }
-
+    this.currentFrame++;
+    if (this.currentFrame >= MAX_FRAMES) {
+      this.currentFrame = 0;
+    }
   }
-
 }
 
 class NodDetector{
@@ -469,7 +486,7 @@ class EyeBrowDetector{
     let distance_x_eyebrows_start = Math.abs(this.x_for_left_eyebrow_start - this.x_for_right_eyebrow_start);
     let distance_y_left_eyebrows = Math.abs(this.y_for_left_eyebrow_start - this.y_for_left_eye_corner);
     let distance_y_right_eyebrows = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner);
-  //   let distance_y_right_eyebrows = Math.abs(this.y.x_for_right_eyebrow_start - this.previousData.prev_y_for_right_eyebrow_start);
+    //   let distance_y_right_eyebrows = Math.abs(this.y.x_for_right_eyebrow_start - this.previousData.prev_y_for_right_eyebrow_start);
 
       if(this.currentFrameConfused % this.frameSkip == 0){
         let previousValues = this.previousData;
@@ -608,10 +625,14 @@ class HandRaised {
       this.minY = this.getMinFaceY(face);
       let palm = false;
       if (leftHand !== undefined) {
-        if (this.checkForPalm(leftHand)) { palm = true; }
+        if (this.checkForPalm(leftHand)) {
+          palm = true;
+        }
       }
       if (rightHand !== undefined) {
-        if (this.checkForPalm(rightHand)) { palm = true; }
+        if (this.checkForPalm(rightHand)) {
+          palm = true;
+        }
       }
       
       if (palm) { 
@@ -689,8 +710,29 @@ class HandRaised {
       return true;
     }
     return false;
-    
   }
+
+  //     if (palm) {
+  //       if (!IS_HAND_RAISED) {
+  //         console.log('add hand'); // eslint-disable-line
+  //         socket.emit('handraise', { value: 1 });
+  //       }
+
+  //       IS_HAND_RAISED = true;
+  //     } else {
+  //       if (IS_HAND_RAISED) {
+  //         console.log('remove hand'); // eslint-disable-line
+  //         socket.emit('handraise', { value: -1 });
+  //       }
+  //       IS_HAND_RAISED = false;
+  //     }
+  //   }
+
+  //   this.frameCounter++;
+  //   if (this.frameCounter >= MAX_FRAMES) {
+  //     this.frameCounter = 0;
+  //   }
+  // }
 
 }
 
@@ -699,9 +741,3 @@ const sd = new SmileDetector();
 const eyebrowDetector = new EyeBrowDetector();
 const hr = new HandRaised();
 const nd = new NodDetector();
-
-
-
-
-
-
