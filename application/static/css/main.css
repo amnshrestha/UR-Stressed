@@ -1,6 +1,10 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:400&subset=latin,latin-ext);
+
 html, body {
   margin: 0;
   padding: 0;
+  font-family: 'Roboto', sans-serif;
+
 }
 
 * { box-sizing: border-box; }
@@ -8,7 +12,6 @@ html, body {
 .nav {
   width: 100vw;
   height: 72px;
-  background: gray;
 }
 
 .wrapper {

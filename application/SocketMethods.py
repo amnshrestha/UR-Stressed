@@ -26,6 +26,13 @@ def homeView():
     """Home view."""
     return render_template('base.html')
 
+@app.route('/about')
+def aboutView():
+    """About view."""
+    return render_template('about.html')
+
+
+
 
 # Commented in case we need to fix this individually later
 # Currently, the code in main.js is same as individual hand and eyebrow code combined
@@ -38,6 +45,11 @@ def homeView():
 # def eyebrow():
 #     """Recognize Eyebrow page."""
 #     return render_template('eyebrow.html')
+@app.route('/nav')
+def navView():
+    """Nav view."""
+    return render_template('nav.html')
+
 
 @socketio.on('connect', namespace='/web')
 def connect_web():
