@@ -4,17 +4,21 @@ const emojis = [
   '✋', // hand raised
   '😀', // smile
   '🤔', // confused
+  '😯',
+  '👍',
+  '❌',
+  '✅'
 ];
 
 const freqs = [
   0,
   0,
   0,
+  0,
+  0,
+  0,
+  0
 ];
-
-function handleChoice() {
-  console.log('something'); // eslint-disable-line
-}
 
 function render() {
   console.log(freqs); // eslint-disable-line
@@ -26,19 +30,17 @@ function render() {
       child = cloud.lastElementChild;
   }
 
+  const sizeFactor = 75;
+
   emojis.forEach((emoji, index) => {
-    let locX = Math.floor(Math.random() * 55) + 25;
-    let locY = Math.floor(Math.random() * 55) + 25;
-  
     let size = freqs[index]/total * 100;
     const node = document.createElement('div');
-    node.style.fontSize = `${size + 60}px`;
+    node.style.fontSize = `${size + sizeFactor}px`;
     node.style.display = 'block';
     node.textContent = emoji;
     cloud.appendChild(node);
   });
 }
-
 
 render();
 
@@ -50,20 +52,44 @@ socket.on('connect', function() {
 });
 
 
-socket.on('raiseHandResponse', function(newHandRaiseCount) {
-  freqs[0] = newHandRaiseCount;
+socket.on('raiseHandResponse', function(count) {
+  freqs[0] = count;
   render();
   console.log('hand raise detected!');
 });
 
-socket.on('smileResponse', function(newSmileCount) {
-  freqs[1] = newSmileCount;
+socket.on('smileResponse', function(count) {
+  freqs[1] = count;
   render();
   console.log('smile detected!');
 });
 
-socket.on('confuseResponse', function(newConfuseCount) {
-  freqs[2] = newConfuseCount;
+socket.on('confusedResponse', function(count) {
+  freqs[2] = count;
   render();
   console.log('confuse detected!');
+});
+
+socket.on('surpisedResponse', function(count) {
+  freqs[2] = count;
+  render();
+  console.log('surprised detected!');
+});
+
+socket.on('thumbsUpResponse', function(count) {
+  freqs[2] = count;
+  render();
+  console.log('thumbs detected!');
+});
+
+socket.on('noResponse', function(count) {
+  freqs[2] = count;
+  render();
+  console.log('no detected!');
+});
+
+socket.on('yesResponse', function(count) {
+  freqs[2] = count;
+  render();
+  console.log('yes detected!');
 });

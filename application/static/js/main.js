@@ -4,7 +4,9 @@ const canvasCtx = canvasElement.getContext('2d');
 
 let IS_SMILING = false;
 let IS_CONFUSED = false;
+let IS_SURPRISED= false;
 let IS_HAND_RAISED = false;
+let IS_THUMBS_UP = false;
 const MAX_FRAMES = 10000;
 
 function onResults(results) {
@@ -30,33 +32,28 @@ function onResults(results) {
   // drawLandmarks(canvasCtx, results.rightHandLandmarks,
   //               {color: '#FF0000', lineWidth: 2});
 
+
   if (typeof results.faceLandmarks !== 'undefined') {
     sd.startDetect(results.faceLandmarks);
     sd.drawOnCanvas(canvasCtx);
     sd.checkForSmile();
-  } else {
-    IS_SMILING = false;
-  }
 
-  if (typeof results.faceLandmarks !== 'undefined') {
     eyebrowDetector.startDetect(results.faceLandmarks);
     eyebrowDetector.drawOnCanvas(canvasCtx);
     eyebrowDetector.checkForEyebrowConfused()
     eyebrowDetector.checkForSurprise() 
+
+    nd.startDetect(results.faceLandmarks);
   } else {
-    IS_CONFUSED = false;
+    // IS_CONFUSED = false;
+    // IS_SMILING = false;
   }
 
   if (typeof results.leftHandLandmarks !== 'undefined' || typeof results.rightHandLandmarks !== 'undefined') {
     hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
     hr.checkforThumbsUp(results.leftHandLandmarks, results.rightHandLandmarks);
-  }
-
-  if (typeof results.faceLandmarks !== 'undefined'){
-    nd.startDetect(results.faceLandmarks);
   } else {
-    // console.log('something'); // eslint-disable-line
-    IS_HAND_RAISED = false;
+    // IS_HAND_RAISED = false;
   }
 
   //Use this to find coordinates
@@ -215,46 +212,36 @@ class SmileDetector {
       Math.pow((this.y_for_right_lip_corner - this.y_for_right_chin_corner), 2)
     );
 
-      if(this.currentFrame % this.frameSkip == 0){
-        var previousValues = this.previousData;
-        if(dLips > (previousValues.lengthOfLip * this.smileLengthFactor) && 
-          dLLTLChinC > previousValues.dleftLipToLeftChin &&
-          dRLTRChinC > previousValues.drightLipToRightChin && !eyebrowDetector.surprised
-          ){
-            console.log("You Smiled");
-            socket.emit('smile', "I smiled");
-          }
+    if (this.currentFrame % this.frameSkip == 0) {
+      var previousValues = this.previousData;
+      if (dLips > (previousValues.lengthOfLip * this.smileLengthFactor) &&
+        dLLTLChinC > previousValues.dleftLipToLeftChin &&
+        dRLTRChinC > previousValues.drightLipToRightChin && !eyebrowDetector.surprised
+      ) {
+        if (!IS_SMILING) {
+          console.log('add smile'); // eslint-disable-line
+          socket.emit('smile', { value: 1 });
+        }
+        IS_SMILING = true;
+      }
 
-        previousValues.lengthOfLip = dLips;
-        previousValues.dleftLipToLeftCorner = dLLTLFaceC;
-        previousValues.dleftLipToLeftChin = dLLTLChinC;
-        previousValues.drightLipToRightCorner = dRLTRFaceC;
-        previousValues.drightLipToRightChin = dRLTRChinC;
-
-    // if (this.currentFrame % this.frameSkip == 0) {
-    //   var previousValues = this.previousData;
-    //   if (dLips > (previousValues.lengthOfLip * this.smileLengthFactor) &&
-    //     dLLTLChinC > previousValues.dleftLipToLeftChin &&
-    //     dRLTRChinC > previousValues.drightLipToRightChin
-    //   ) {
-    //     if (!IS_SMILING) {
-    //       console.log('add smile'); // eslint-disable-line
-    //       socket.emit('smile', { value: 1 });
-    //     }
-    //     IS_SMILING = true;
-    //   }
-
-    //   if (dLips < (previousValues.lengthOfLip * this.endSmileFactor) &&
-    //     dLLTLChinC < previousValues.dleftLipToLeftChin &&
-    //     dRLTRChinC < previousValues.drightLipToRightChin
-    //   ) {
-    //     if (IS_SMILING) {
-    //       console.log('remove smile'); // eslint-disable-line
-    //       socket.emit('smile', { value: -1 });
-    //     }
-    //     IS_SMILING = false;
-    //   }
+      if (dLips < (previousValues.lengthOfLip * this.endSmileFactor) &&
+        dLLTLChinC < previousValues.dleftLipToLeftChin &&
+        dRLTRChinC < previousValues.drightLipToRightChin
+      ) {
+        if (IS_SMILING) {
+          console.log('remove smile'); // eslint-disable-line
+          socket.emit('smile', { value: -1 });
+        }
+        IS_SMILING = false;
+      }
     }
+
+    previousValues.lengthOfLip = dLips;
+    previousValues.dleftLipToLeftCorner = dLLTLFaceC;
+    previousValues.dleftLipToLeftChin = dLLTLChinC;
+    previousValues.drightLipToRightCorner = dRLTRFaceC;
+    previousValues.drightLipToRightChin = dRLTRChinC;
 
     this.currentFrame++;
     if (this.currentFrame >= MAX_FRAMES) {
@@ -263,7 +250,7 @@ class SmileDetector {
   }
 }
 
-class NodDetector{
+class NodDetector {
   constructor(){
     this.imagePoints = []
     this.imageShape = [0,0]
@@ -327,9 +314,8 @@ class NodDetector{
   }
 }
 
-class EyeBrowDetector{
-
-  constructor(){
+class EyeBrowDetector {
+  constructor() {
     this.frameSkip = 10;// allow frame skip
     this.currentFrameConfused = 0;// Current frame size
     this.currentFrameSurprised = 0;
@@ -395,21 +381,18 @@ class EyeBrowDetector{
     this.eyebrowsRaised = false;
     this.lipOpen = false;
     this.surprised = false;
-
   }
 
-  drawOnCanvas(canvasCtx){
-      canvasCtx.fillRect(this.x_for_left_eyebrow_start,this.y_for_left_eyebrow_start,5,5);
-      canvasCtx.fillRect(this.x_for_right_eyebrow_start,this.y_for_right_eyebrow_start,5,5);
-      canvasCtx.fillRect(this.x_for_left_eyebrow_middle,this.y_for_left_eyebrow_middle,5,5);
-      canvasCtx.fillRect(this.x_for_right_eyebrow_middle,this.y_for_right_eyebrow_middle,5,5);
-      canvasCtx.fillRect(this.x_for_upper_lip, this.y_for_upper_lip, 5, 5);
-      canvasCtx.fillRect(this.x_for_lower_lip, this.y_for_lower_lip, 5, 5);
+  drawOnCanvas(canvasCtx) {
+    canvasCtx.fillRect(this.x_for_left_eyebrow_start,this.y_for_left_eyebrow_start,5,5);
+    canvasCtx.fillRect(this.x_for_right_eyebrow_start,this.y_for_right_eyebrow_start,5,5);
+    canvasCtx.fillRect(this.x_for_left_eyebrow_middle,this.y_for_left_eyebrow_middle,5,5);
+    canvasCtx.fillRect(this.x_for_right_eyebrow_middle,this.y_for_right_eyebrow_middle,5,5);
+    canvasCtx.fillRect(this.x_for_upper_lip, this.y_for_upper_lip, 5, 5);
+    canvasCtx.fillRect(this.x_for_lower_lip, this.y_for_lower_lip, 5, 5);
   }
   
-
-  startDetect(lm){
-      
+  startDetect(lm) {
       //start of left eyebrow is 336
       let leftEyebrowStartCoordinates = findCoordinates(lm,336);
       this.x_for_left_eyebrow_start = leftEyebrowStartCoordinates[0];
@@ -476,7 +459,7 @@ class EyeBrowDetector{
       this.surprised = false
   }
 
-  checkForEyebrowConfused(){
+  checkForEyebrowConfused() {
     if(this.firstReading === true){
       this.firstReading = false;
       return;
@@ -513,13 +496,22 @@ class EyeBrowDetector{
         // }
 
         if (this.eyebrowsCloser && this.eyebrowsLower && !previousValues.surprised) {
-          console.log("You are confused!");
-          socket.emit('confused', "I am confused");
+          if (!IS_CONFUSED) {
+            console.log('add confused'); // eslint-disable-line
+            socket.emit('confused', { value: 1 });
+          }
+  
+          IS_CONFUSED = true;
           this.confused = true;
-          // console.log("z distance is: " + this.const_distance_z_average)
+        } else {
+          if (IS_CONFUSED) {
+            console.log('remove confused'); // eslint-disable-line
+            socket.emit('confused', { value: -1 });
+          }
+  
+          IS_CONFUSED = false;
         }
 
-    
         // if ((distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
         // (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
         //   console.log("distance Y is smaller than before");
@@ -531,13 +523,13 @@ class EyeBrowDetector{
         previousValues.prev_distance_y_left_eyebrow = distance_y_left_eyebrows
         previousValues.prev_distance_y_right_eyebrow = distance_y_right_eyebrows
       }
-      this.currentFrameConfused +=1;
-      if(this.currentFrameConfused >=10000){
+      this.currentFrameConfused++;
+      if(this.currentFrameConfused >= MAX_FRAMES){
         this.currentFrameConfused = 0;
       }
   }
 
-  checkForSurprise(){
+  checkForSurprise() {
     if(this.firstReadingSurprised === true){
       this.firstReadingSurprised = false;
       return;
@@ -575,8 +567,19 @@ class EyeBrowDetector{
 
       if (this.eyebrowsRaised && this.lipOpen) {
         this.surprised = true;
-        console.log("You are surprised");
-        socket.emit('surprised', "I am surprised");
+        if (!IS_SURPRISED) {
+          console.log('add surprised'); // eslint-disable-line
+          socket.emit('surprised', { value: 1 });
+        }
+
+        IS_SURPRISED = true;
+      } else {
+        if (IS_SURPRISED) {
+          console.log('remove surprised'); // eslint-disable-line
+          socket.emit('surprised', { value: -1 });
+        }
+
+        IS_SURPRISED = false;
       }
 
       previousValues.prev_y_for_left_eyebrow_middle = this.y_for_left_eyebrow_middle
@@ -588,11 +591,10 @@ class EyeBrowDetector{
     }
 
     this.currentFrameSurprised +=1;
-    if(this.currentFrameSurprised >=10000){
+    if(this.currentFrameSurprised >=MAX_FRAMES){
       this.currentFrameSurprised = 0;
     }
   }
-
 }
 
 class HandRaised {
@@ -635,13 +637,24 @@ class HandRaised {
         }
       }
       
-      if (palm) { 
-        console.log('You raised your hand'); 
-        socket.emit('handraised', "I raised my hand");
-      } // eslint-disable-line}
+      if (palm) {
+        if (!IS_HAND_RAISED) {
+          console.log('add hand'); // eslint-disable-line
+          socket.emit('handraise', { value: 1 });
+        }
+
+        IS_HAND_RAISED = true;
+      } else {
+        if (IS_HAND_RAISED) {
+          console.log('remove hand'); // eslint-disable-line
+          socket.emit('handraise', { value: -1 });
+        }
+        IS_HAND_RAISED = false;
+      }
     }
+
     this.frameCounterHandRaise++;
-    if (this.frameCounterHandRaise >= 10000){
+    if (this.frameCounterHandRaise >= MAX_FRAMES){
       this.frameCounterHandRaise = 0;
     }
   }
@@ -651,9 +664,18 @@ class HandRaised {
       let rightHandThumbsUp = this.checkforOneHandThumbsUp(rightHand);
       // let leftHandThumbsUp = this.checkforOneHandThumbsUp(leftHand);
       if (rightHandThumbsUp) {
-        console.log("Thumbs up");
-        this.thumbsUp = true;
-        socket.emit('thumbsup', "my right hand thumbs up");
+        if (!IS_THUMBS_UP) {
+          console.log('add thumb'); // eslint-disable-line
+          socket.emit('thumb', { value: 1 });
+        }
+
+        IS_THUMBS_UP = true;
+      } else {
+        if (IS_THUMBS_UP) {
+          console.log('remove thumb'); // eslint-disable-line
+          socket.emit('thumb', { value: -1 });
+        }
+        IS_THUMBS_UP = false;
       }
       // if (rightHandThumbsUp || leftHandThumbsUp) {
       //   this.thumbsUp = true;
@@ -661,13 +683,12 @@ class HandRaised {
       // }
     }
     this.frameCounterThumbsUp++;
-    if (this.frameCounterThumbsUp >= 10000){
+    if (this.frameCounterThumbsUp >= MAX_FRAMES){
       this.frameCounterThumbsUp = 0;
     }
   }
 
   checkforOneHandThumbsUp(targetHand) {
-    
     //finger tip coordinates
     let y_rightThumbTip = findCoordinates(targetHand, 4)[1];
     let x_rightIndexTip = findCoordinates(targetHand, 8)[0];
@@ -711,31 +732,7 @@ class HandRaised {
     }
     return false;
   }
-
-  //     if (palm) {
-  //       if (!IS_HAND_RAISED) {
-  //         console.log('add hand'); // eslint-disable-line
-  //         socket.emit('handraise', { value: 1 });
-  //       }
-
-  //       IS_HAND_RAISED = true;
-  //     } else {
-  //       if (IS_HAND_RAISED) {
-  //         console.log('remove hand'); // eslint-disable-line
-  //         socket.emit('handraise', { value: -1 });
-  //       }
-  //       IS_HAND_RAISED = false;
-  //     }
-  //   }
-
-  //   this.frameCounter++;
-  //   if (this.frameCounter >= MAX_FRAMES) {
-  //     this.frameCounter = 0;
-  //   }
-  // }
-
 }
-
 
 const sd = new SmileDetector();
 const eyebrowDetector = new EyeBrowDetector();

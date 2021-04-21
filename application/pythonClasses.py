@@ -13,41 +13,27 @@ class Session:
         self.peopleSmiling = 0
         self.peopleConfused = 0
         self.totalRaisedHand = 0
-
-        #Possible future implementation
-        self.peopleSurprised = 0
-        self.peopleEyeBrowRaised = 0
-        self.overalMood = 0
-
-    # Methods to change smiling
-    def increaseSmile(self):
-        self.peopleSmiling = self.peopleSmiling + 1
-    
-    def decreaseSmile(self):
-        self.peopleSmiling = self.peopleSmiling - 1
+        self.totalThumbs = 0
+        self.totalYes = 0
+        self.totalNo = 0
     
     def getTotalSmiling(self):
         return self.peopleSmiling
-
-    # Methods to change confused
-    def increaseConfused(self):
-        self.peopleConfused = self.peopleConfused + 1
-    
-    def decreaseConfused(self):
-        self.peopleConfused = self.peopleConfused - 1
     
     def getTotalConfused(self):
         return self.peopleConfused
-
-    # Methods to change Raised Hand
-    def increaseTotalRaisedHand(self):
-        self.totalRaisedHand = self.totalRaisedHand + 1
-    
-    def decreaseTotalRaisedHand(self):
-        self.totalRaisedHand = self.totalRaisedHand - 1
     
     def getTotalRaisedHand(self):
         return self.totalRaisedHand
+
+    def getTotalThumbs(self):
+        return self.totalThumbs
+
+    def getTotalYes(self):
+        return self.totalYes
+
+    def getTotalNo(self):
+        return self.totalNo
 
     def updateSmiling(self, value):
         self.peopleSmiling = self.peopleSmiling + value
@@ -57,6 +43,15 @@ class Session:
 
     def updateRaisedHands(self, value):
         self.totalRaisedHand = self.totalRaisedHand + value
+
+    def updateThumbsUp(self, value):
+        self.totalThumbs = self.totalThumbs + value
+    
+    def updateYes(self, value):
+        self.totalYes = self.totalYes + value
+
+    def updateNo(self, value):
+        self.totalNo = self.totalNo + value
 
 
 class HeadMovementDetection:
