@@ -21,6 +21,11 @@ def instructorView():
     """Instructor view."""
     return render_template('instructorView.html')
 
+@app.route('/home')
+def homeView():
+    """Home view."""
+    return render_template('base.html')
+
 
 # Commented in case we need to fix this individually later
 # Currently, the code in main.js is same as individual hand and eyebrow code combined

@@ -12,6 +12,10 @@ const freqs = [
   0,
 ];
 
+function handleChoice() {
+  console.log('something'); // eslint-disable-line
+}
+
 function render() {
   console.log(freqs); // eslint-disable-line
   const total = freqs.reduce((a, b) => a + b, 0);
@@ -28,7 +32,7 @@ function render() {
   
     let size = freqs[index]/total * 100;
     const node = document.createElement('div');
-    node.style.fontSize = `${size + 40}px`;
+    node.style.fontSize = `${size + 60}px`;
     node.style.display = 'block';
     node.textContent = emoji;
     cloud.appendChild(node);
