@@ -53,13 +53,9 @@ function render() {
 
 render();
 
-let namespace = "/web";
-
-const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
   console.log('Connected!');
 });
-
 
 socket.on('raiseHandResponse', function(count) {
   freqs[0] = count;

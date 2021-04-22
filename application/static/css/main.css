@@ -38,11 +38,15 @@ html, body {
   align-items: center;
 }
 
-.camera {
+.output_canvas {
+  display: none;
+}
+
+#camera {
   display: flex;
   width: 320px;
   height: 180px;
-  background: black;
+  /* background: black; */
 }
 
 .reactions {
