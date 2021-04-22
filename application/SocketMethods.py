@@ -105,6 +105,10 @@ def thumbs_up_detected(data):
     sessionOne.updateThumbsUp(data['value'])
     socketio.emit('thumbsUpResponse', sessionOne.getTotalThumbs(), namespace='/web')
 
+@socketio.on('reset', namespace='/web')
+def reset():
+    sessionOne.resetValues()
+
 @socketio.on('disconnect', namespace='/web')
 def disconnect_web():
     print('[INFO] Web client disconnected: {}'.format(request.sid))

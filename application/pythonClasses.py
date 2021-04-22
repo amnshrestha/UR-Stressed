@@ -17,6 +17,15 @@ class Session:
         self.totalYes = 0
         self.totalNo = 0
         self.totalSurprised = 0
+
+    def resetValues(self):
+      self.peopleSmiling = 0
+      self.peopleConfused = 0
+      self.totalRaisedHand = 0
+      self.totalThumbs = 0
+      self.totalYes = 0
+      self.totalNo = 0
+      self.totalSurprised = 0
     
     def getTotalSmiling(self):
         return self.peopleSmiling

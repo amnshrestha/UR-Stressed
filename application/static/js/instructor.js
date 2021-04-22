@@ -20,6 +20,10 @@ const freqs = [
   0
 ];
 
+function reset() {
+  socket.emit('reset');
+}
+
 const emojiElements = [];
 const sizeFactor = 45;
 emojis.forEach((emoji, index) => {
