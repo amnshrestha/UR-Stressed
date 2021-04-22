@@ -6,12 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400&subset=latin,latin-ext">
     <link rel="stylesheet" href="{{url_for('static',filename='css/home.css')}}">
+    <!-- eek -->
+    <script src="//code.jquery.com/jquery.min.js"></script>
+
     <title>Home</title>
 </head>
 <body>
 
   <div class="nav">
+  <!--Navigation bar-->
+  <div id="nav-placeholder">
+    <script>
+      $.get("nav", function(data){
+          $("#nav-placeholder").replaceWith(data);
+      });
+      </script>
+  </div>
+  
+
+  <!--end of Navigation bar-->
   </div>
   <div class="wrapper">
     <div class="left">
@@ -19,18 +34,41 @@
     </div>
     <div class="right">
       <div class="reactions">
-        <h2>how are you feeling today?</h2>
-        <h4>it's important to understand how everyone is doing today</h4>
+        <div class="reaction-header">
+          <h2>how are you feeling today?</h2>
+          <h4>it's important to understand how everyone is doing today</h4>  
+        </div>
         
         <h3>Pick an emoji that best describes your mood today</h3>
-        <div class="emojis">
-          <p class="emoji-choice" onClick="handleChoice" id="emotion-id-here">✋</p>
-          <p class="emoji-choice" onClick="handleChoice" id="emotion-id-here">✋</p>
-          <p class="emoji-choice" onClick="handleChoice" id="emotion-id-here">✋</p>
-          <p class="emoji-choice" onClick="handleChoice" id="emotion-id-here">✋</p>
-          <p class="emoji-choice" onClick="handleChoice" id="emotion-id-here">✋</p>
-          <p class="emoji-choice" onClick="handleChoice" id="emotion-id-here">✋</p>
+        <!-- <div class="emojis">
+          <p class="emoji-choice" onClick="handleChoice" id="happy">😄</p>
+          <p class="emoji-choice" onClick="handleChoice" id="ready">🤓</p>
+          <p class="emoji-choice" onClick="handleChoice" id="notgreat">🙃</p>
+          <p class="emoji-choice" onClick="handleChoice" id="sad">😞</p>
+          <p class="emoji-choice" onClick="handleChoice" id="dying">😱</p>
+          <p class="emoji-choice" onClick="handleChoice" id="sick">😷</p>
+        </div> -->
+        <form>
+        <div class="emojis" id="emoji-select">
+          <input type="radio" id="happy" name="emoji-choice" value="happy">
+          <label for="happy">😄</label>
+          <input type="radio" id="ready" name="emoji-choice" value="ready">
+          <label for="ready">🤓</label>
+          <input type="radio" id="notgreat" name="emoji-choice" value="notgreat">
+          <label for="notgreat">🙃</label>
+          <input type="radio" id="sad" name="emoji-choice" value="sad">
+          <label for="sad">😞</label>
+          <input type="radio" id="dying" name="emoji-choice" value="dying">
+          <label for="dying">😱</label>
+          <input type="radio" id="sick" name="emoji-choice" value="sick">
+          <label for="sick">😷</label>
         </div>
+
+        <button type="moodshare">Share mood with meeting</button>
+      </form>
+
+
+
       </div>
     </div>
   </div>

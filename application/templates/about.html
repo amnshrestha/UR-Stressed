@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400&subset=latin,latin-ext">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/home.css')}}">
+    <!-- eek -->
+    <script src="//code.jquery.com/jquery.min.js"></script>
+
+    <title>About</title>
+</head>
+
+<body>
+
+    <div class="nav">
+        <!--Navigation bar-->
+        <div id="nav-placeholder">
+            <script>
+                $.get("nav", function (data) {
+                    $("#nav-placeholder").replaceWith(data);
+                });
+            </script>
+        </div>
+    </div>
+
+    <div class="about-wrapper">
+        <!-- <div class="left">
+            <img src="static/res/landing.jpg" class="landing-img" alt="landing" />
+        </div> -->
+        <!-- <div class="right"> -->
+            <div class="about">
+
+                <h2>Hello!</h2>
+                <h4>We want to help!</h4>
+            </br>
+                <h3>Zoom sucks.</h3>
+                <h3>Let me re-state: Zoom <em>sucks</em> as a virtual classroom. </h3>
+                <h3>Students are camera tired and professors are tired from the tired students. That's why built this project. Instead of constantly showing all of yourself in a virtual classroom, we see you and only convey the necessary information the professors look for.</h3>
+                <h3>First, we'll ask you how you are doing. Pick the emoji that best describes your mood. Then we share this with everyone in the meeting anonymously, so don't worry about </h3>
+            </div>
+        <!-- </div> -->
+    </div>
+
+
+</body>
+
+</html>
