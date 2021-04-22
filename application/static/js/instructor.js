@@ -20,24 +20,29 @@ const freqs = [
   0
 ];
 
+const emojiElements = [];
+const sizeFactor = 45;
+emojis.forEach((emoji, index) => {
+  const node = document.createElement('div');
+  node.style.fontSize = '16px';
+  node.style.display = 'block';
+  node.style.position = 'absolute';
+  const top = Math.floor(Math.random() * (cloud.clientHeight / 2) + 20)
+  const left = Math.floor(Math.random() * (cloud.clientWidth / 2) + (cloud.clientWidth / 4))
+  node.style.top = `${top}px`;
+  node.style.left = `${left}px`;
+  node.textContent = emoji;
+  cloud.appendChild(node);
+  emojiElements.push(node);
+});
+
 function render() {
   console.log(freqs); // eslint-disable-line
   const total = freqs.reduce((a, b) => a + b, 0);
-
-  let child = cloud.lastElementChild; 
-  while (child) {
-      cloud.removeChild(child);
-      child = cloud.lastElementChild;
-  }
-
-  const sizeFactor = 40;
-
-  emojis.forEach((emoji, index) => {
+  
+  emojiElements.forEach((node, index) => {
     let size = freqs[index]/total * 100;
-    const node = document.createElement('div');
     node.style.fontSize = `${size + sizeFactor}px`;
-    node.style.display = 'block';
-    node.textContent = emoji;
     cloud.appendChild(node);
   });
 }
