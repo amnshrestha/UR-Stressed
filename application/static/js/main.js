@@ -235,13 +235,12 @@ class SmileDetector {
         }
         IS_SMILING = false;
       }
+      previousValues.lengthOfLip = dLips;
+      previousValues.dleftLipToLeftCorner = dLLTLFaceC;
+      previousValues.dleftLipToLeftChin = dLLTLChinC;
+      previousValues.drightLipToRightCorner = dRLTRFaceC;
+      previousValues.drightLipToRightChin = dRLTRChinC;
     }
-
-    previousValues.lengthOfLip = dLips;
-    previousValues.dleftLipToLeftCorner = dLLTLFaceC;
-    previousValues.dleftLipToLeftChin = dLLTLChinC;
-    previousValues.drightLipToRightCorner = dRLTRFaceC;
-    previousValues.drightLipToRightChin = dRLTRChinC;
 
     this.currentFrame++;
     if (this.currentFrame >= MAX_FRAMES) {
@@ -306,11 +305,10 @@ class NodDetector {
 
     var toAdd = [this.x_rightLip, this.y_rightLip];
     this.imagePoints.push(toAdd);
-
-    socket.emit('nodDetection', {imagePoints: this.imagePoints, imageShape: [canvasElement.height,canvasElement.width]});
-
-    // console.log(this.imagePoints);
-
+    socket.emit('nodDetection', {
+      imagePoints: this.imagePoints, 
+      imageShape: [canvasElement.height,canvasElement.width],
+    });
   }
 }
 
@@ -471,7 +469,7 @@ class EyeBrowDetector {
     let distance_y_right_eyebrows = Math.abs(this.y_for_right_eyebrow_start - this.y_for_right_eye_corner);
     //   let distance_y_right_eyebrows = Math.abs(this.y.x_for_right_eyebrow_start - this.previousData.prev_y_for_right_eyebrow_start);
 
-      if(this.currentFrameConfused % this.frameSkip == 0){
+      if(this.currentFrameConfused % this.frameSkip == 0) {
         let previousValues = this.previousData;
 
         // console.log("prev distance: " + previousValues.prev_distance_x_eyebrows_start)
@@ -503,7 +501,11 @@ class EyeBrowDetector {
   
           IS_CONFUSED = true;
           this.confused = true;
-        } else {
+        }
+
+        if ((distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor > previousValues.prev_distance_x_eyebrows_start) &&
+            ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor > previousValues.prev_distance_y_left_eyebrow) || 
+            (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor > previousValues.prev_distance_y_right_eyebrow))) {
           if (IS_CONFUSED) {
             console.log('remove confused'); // eslint-disable-line
             socket.emit('confused', { value: -1 });
@@ -573,7 +575,11 @@ class EyeBrowDetector {
         }
 
         IS_SURPRISED = true;
-      } else {
+      }
+      
+      if (((leftForeheadDistance * this.foreheadDistanceLengthFactor > previousValues.prev_distance_forehead_left) &&
+      (rightForeheadDistance * this.foreheadDistanceLengthFactor > previousValues.prev_distance_forehead_right)) &&
+      (previousValues.prev_distance_lip * this.lipDistanceLengthFactor > distanceBetweenLips)) {
         if (IS_SURPRISED) {
           console.log('remove surprised'); // eslint-disable-line
           socket.emit('surprised', { value: -1 });
@@ -590,8 +596,8 @@ class EyeBrowDetector {
       previousValues.surprised = this.surprised
     }
 
-    this.currentFrameSurprised +=1;
-    if(this.currentFrameSurprised >=MAX_FRAMES){
+    this.currentFrameSurprised++;
+    if(this.currentFrameSurprised >= MAX_FRAMES){
       this.currentFrameSurprised = 0;
     }
   }

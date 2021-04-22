@@ -27,9 +27,6 @@ def aboutView():
     """About view."""
     return render_template('about.html')
 
-
-
-
 # Commented in case we need to fix this individually later
 # Currently, the code in main.js is same as individual hand and eyebrow code combined
 @app.route('/hand')
@@ -57,47 +54,54 @@ def connect_web():
     socketio.emit('message','Message is being sent', namespace='/web')
 
 @socketio.on('nodDetection', namespace='/web')
-def nod_detector(dataSent):
-    print('[INFO] Data from: {}'.format(request.sid))
+def nod_detector(data):
+    # print('[INFO] Data from: {}'.format(request.sid))
     headNodDetector = detectorDict[request.sid]
-    imagePoints = dataSent['imagePoints']
-    imageShape = dataSent['imageShape']
+    imagePoints = data['imagePoints']
+    imageShape = data['imageShape']
     headNodDetector.setValues(imagePoints, imageShape)
     headNodded, saidNo = headNodDetector.calculate()
-    if(headNodded):
-        sessionOne.updateYes(data['value'])
-        socketio.emit('yesResponse', sessionOne.getTotalYes(), namespace='/web')
-    if(saidNo):
-        sessionOne.updateNo(data['value'])
-        socketio.emit('noResponse', sessionOne.getTotalNo(), namespace='/web')
+
+    if headNodded:
+      sessionOne.updateYes(1)
+      socketio.emit('yesResponse', sessionOne.getTotalYes(), namespace='/web')
+
+    if saidNo:
+      sessionOne.updateNo(1)
+      socketio.emit('noResponse', sessionOne.getTotalNo(), namespace='/web')
+    
+    if not saidNo and headNodded:
+      sessionOne.updateNo(-1)
+    if not headNodded and saidNo:
+      sessionOne.updateYes(-1)
 
 @socketio.on('smile', namespace='/web')
 def smile_detected(data):
-    print('[INFO] This person smiled: {}'.format(request.sid))
+    # print('[INFO] This person smiled: {}'.format(request.sid))
     sessionOne.updateSmiling(data['value'])
     socketio.emit('smileResponse', sessionOne.getTotalSmiling(), namespace='/web')
 
 @socketio.on('confused', namespace='/web')
 def confuse_detected(data):
-    print('[INFO] This person is confused: {}'.format(request.sid))
+    # print('[INFO] This person is confused: {}'.format(request.sid))
     sessionOne.updateConfused(data['value'])
     socketio.emit('confusedResponse', sessionOne.getTotalConfused(), namespace='/web')
 
 @socketio.on('surprised', namespace='/web')
 def surprised_detected(data):
-    print('[INFO] This person is surprised: {}'.format(request.sid))
+    # print('[INFO] This person is surprised: {}'.format(request.sid))
     sessionOne.updateSurprised(data['value'])
     socketio.emit('surprisedResponse', sessionOne.getTotalSurprised(), namespace='/web')
 
 @socketio.on('handraise', namespace='/web')
 def hand_raise_detected(data):
-    print('[INFO] This person raised their hand: {}'.format(request.sid))
+    # print('[INFO] This person raised their hand: {}'.format(request.sid))
     sessionOne.updateRaisedHands(data['value'])
     socketio.emit('raiseHandResponse', sessionOne.getTotalRaisedHand(), namespace='/web')
 
 @socketio.on('thumb', namespace='/web')
 def thumbs_up_detected(data):
-    print('[INFO] This person thumbs up: {}'.format(request.sid))
+    # print('[INFO] This person thumbs up: {}'.format(request.sid))
     sessionOne.updateThumbsUp(data['value'])
     socketio.emit('thumbsUpResponse', sessionOne.getTotalThumbs(), namespace='/web')
 

@@ -30,7 +30,7 @@ function render() {
       child = cloud.lastElementChild;
   }
 
-  const sizeFactor = 75;
+  const sizeFactor = 40;
 
   emojis.forEach((emoji, index) => {
     let size = freqs[index]/total * 100;
@@ -71,25 +71,30 @@ socket.on('confusedResponse', function(count) {
 });
 
 socket.on('surpisedResponse', function(count) {
-  freqs[2] = count;
+  freqs[3] = count;
   render();
   console.log('surprised detected!');
 });
 
 socket.on('thumbsUpResponse', function(count) {
-  freqs[2] = count;
+  freqs[4] = count;
   render();
   console.log('thumbs detected!');
 });
 
 socket.on('noResponse', function(count) {
-  freqs[2] = count;
+  freqs[5] = count;
   render();
   console.log('no detected!');
 });
 
 socket.on('yesResponse', function(count) {
-  freqs[2] = count;
+  freqs[6] = count;
   render();
   console.log('yes detected!');
 });
+
+window.setInterval(function() {
+  freqs[5] = 0;
+  freqs[6] = 0;
+}, 5000);

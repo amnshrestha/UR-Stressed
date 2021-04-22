@@ -16,6 +16,7 @@ class Session:
         self.totalThumbs = 0
         self.totalYes = 0
         self.totalNo = 0
+        self.totalSurprised = 0
     
     def getTotalSmiling(self):
         return self.peopleSmiling
@@ -35,6 +36,9 @@ class Session:
     def getTotalNo(self):
         return self.totalNo
 
+    def getTotalSurprised(self):
+        return self.totalSurprised
+
     def updateSmiling(self, value):
         self.peopleSmiling = self.peopleSmiling + value
 
@@ -43,6 +47,9 @@ class Session:
 
     def updateRaisedHands(self, value):
         self.totalRaisedHand = self.totalRaisedHand + value
+
+    def updateSurprised(self, value):
+        self.totalSurprised = self.totalSurprised + value
 
     def updateThumbsUp(self, value):
         self.totalThumbs = self.totalThumbs + value
