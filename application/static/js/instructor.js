@@ -24,6 +24,21 @@ function reset() {
   socket.emit('reset');
 }
 
+
+
+// This is for the homepage
+$('#submitMood').click(()=>{
+
+  var name = $('#name').val();
+  var emojiSelected = $("input[name='emoji-choice']:checked").val();
+  if(name === ''){
+    $('#missingName').css('display','flex');
+  }else{
+    window.location = '/instructor?name='+name+'&emoji='+emojiSelected;
+    console.log(window.location);
+  }
+})
+
 const emojiElements = [];
 const sizeFactor = 45;
 emojis.forEach((emoji, index) => {
@@ -47,6 +62,10 @@ function render() {
   emojiElements.forEach((node, index) => {
     let size = freqs[index]/total * 100;
     node.style.fontSize = `${size + sizeFactor}px`;
+    if (size === 0){
+      node.style.fontSize = `0px`;
+      // Or display display to none 
+    }
     cloud.appendChild(node);
   });
 }
@@ -75,7 +94,7 @@ socket.on('confusedResponse', function(count) {
   console.log('confuse detected!');
 });
 
-socket.on('surpisedResponse', function(count) {
+socket.on('surprisedResponse', function(count) {
   freqs[3] = count;
   render();
   console.log('surprised detected!');
@@ -103,3 +122,5 @@ window.setInterval(function() {
   freqs[5] = 0;
   freqs[6] = 0;
 }, 5000);
+
+

@@ -7,6 +7,10 @@ html, body {
 
 * { box-sizing: border-box; }
 
+#missingName{
+  display: none;
+}
+
 .nav {
   width: 100vw;
   height: 72px;
