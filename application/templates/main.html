@@ -13,11 +13,21 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js" crossorigin="anonymous"></script>
-</head>
+    <!-- nav -->
+    <script src="//code.jquery.com/jquery.min.js"></script>
+  </head>
 
 <body>
   <div class="nav">
-    <h2>how UR feeling</h2>
+    <!--Navigation bar-->
+    <div id="nav-placeholder">
+      <script>
+        $.get("nav", function (data) {
+          $("#nav-placeholder").replaceWith(data);
+        });
+      </script>
+    </div>
+    <!--end of Navigation bar-->
   </div>
   <div class="wrapper">
     <div class="left">
