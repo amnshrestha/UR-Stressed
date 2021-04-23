@@ -64,10 +64,14 @@ socket.on('connect', function() {
   console.log('Receiving feedback!');
 });
 
-socket.on('raiseHandResponse', function(count) {
+socket.on('raiseHandResponse', function(name, count) {
+  console.log("The name is " + name);
+  console.log("The count is " + count);
+  $('.handRaisedList').css('display','flex');
+  $('#peopleHandRaised').append('<li>'+name+'</li>')
   freqs[0] = count;
   render();
-  console.log('hand raise detected!');
+  console.log(name + 'raised their hand');
 });
 
 socket.on('smileResponse', function(count) {

@@ -49,6 +49,10 @@ html, body {
   /* background: black; */
 }
 
+#handRaisedList{
+  display:none;
+}
+
 .reactions {
   display: flex;
   flex-direction: column;
