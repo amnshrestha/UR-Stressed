@@ -64,11 +64,19 @@ socket.on('connect', function() {
   console.log('Receiving feedback!');
 });
 
-socket.on('raiseHandResponse', function(name, count) {
-  console.log("The name is " + name);
-  console.log("The count is " + count);
+socket.on('raiseHandResponse', function(name, count, raisedValue) {
   $('.handRaisedList').css('display','flex');
-  $('#peopleHandRaised').append('<li>'+name+'</li>')
+  if(raisedValue){
+    $('#peopleHandRaised').append('<li>'+name+'</li>')
+  }else{
+    $("#peopleHandRaised li").each(function(){
+      console.log($(this).text());
+      if($(this).text() === name){
+        this.remove();
+      }
+    });
+  }
+  
   freqs[0] = count;
   render();
   console.log(name + 'raised their hand');

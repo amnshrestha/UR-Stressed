@@ -92,7 +92,10 @@ def surprised_detected(data):
 def hand_raise_detected(data):
     # print('[INFO] This person raised their hand: {}'.format(request.sid))
     sessionOne.updateRaisedHands(data['value'])
-    socketio.emit('raiseHandResponse', (nameDict[request.sid],sessionOne.getTotalRaisedHand()), namespace='/web')
+    raisedValue = True
+    if(data['value'] == -1):
+        raisedValue = False
+    socketio.emit('raiseHandResponse', (nameDict[request.sid],sessionOne.getTotalRaisedHand(),raisedValue), namespace='/web')
 
 @socketio.on('thumb', namespace='/web')
 def thumbs_up_detected(data):
