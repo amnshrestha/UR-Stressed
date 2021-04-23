@@ -61,7 +61,7 @@ function render() {
 render();
 
 socket.on('connect', function() {
-  console.log('Connected!');
+  console.log('Receiving feedback!');
 });
 
 socket.on('raiseHandResponse', function(count) {

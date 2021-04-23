@@ -4,10 +4,18 @@ $('#submitMood').click(()=>{
 
     var name = $('#name').val();
     var emojiSelected = $("input[name='emoji-choice']:checked").val();
-    if(name === ''){
-      $('#missingName').css('display','flex');
-    }else{
-      window.location = '/instructor?name='+name+'&emoji='+emojiSelected;
-      console.log(window.location);
+    console.log(emojiSelected);
+    if(name === '' || emojiSelected===undefined){
+        if(name === ''){
+            $('#missingName').css('display','flex');
+        } 
+        if(emojiSelected===undefined){
+            $('#missingEmoji').css('display','flex');
+        } 
+      
+      return;
     }
-  })
+    window.location = '/instructor?name='+name+'&emoji='+emojiSelected;
+    console.log(window.location);
+    
+})

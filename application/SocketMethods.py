@@ -6,6 +6,8 @@ from flask_socketio import SocketIO, send
 socketio = SocketIO(app, logger = False)
 sessionOne = Session()
 detectorDict = {}
+nameDict = {}
+emojiDict = {}
 
 @app.route('/')
 def index():
@@ -35,6 +37,16 @@ def connect_web():
     detectorDict[request.sid] = headNodDetector
 
     socketio.emit('message','Message is being sent', namespace='/web')
+
+@socketio.on('initialData', namespace='/web')
+def surprised_detected(initialData):
+    # print('[INFO] This person is surprised: {}'.format(request.sid))
+    currentName = initialData['name']
+    currentEmoji = initialData['emoji']
+    nameDict[request.sid] = currentName
+    emojiDict[request.sid] = currentEmoji
+
+
 
 @socketio.on('nodDetection', namespace='/web')
 def nod_detector(data):

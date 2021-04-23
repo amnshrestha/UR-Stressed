@@ -94,8 +94,22 @@ camera.start();
 let namespace = "/web";
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
-  console.log('Connected!');
+  var userName = $.urlParam('name');
+  var userEmoji = $.urlParam('emoji');
+  socket.emit('initialData', { name: userName, emoji:userEmoji });
+  console.log('Connection successful');
 });
+
+// Code copied from https://stackoverflow.com/questions/7731778/get-query-string-parameters-url-values-with-jquery-javascript-querystring
+$.urlParam = function (name) {
+  var results = new RegExp('[\?&]' + name + '=([^&#]*)')
+                    .exec(window.location.search);
+
+  return (results !== null) ? results[1] || 0 : false;
+}
+
+
+
 
 // Written by Aman
 // Finds x,y coordinate of a landmark
