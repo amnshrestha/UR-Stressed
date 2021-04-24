@@ -28,9 +28,13 @@ function reset() {
   socket.emit('reset');
 }
 
-function hideCamera() {
+function toggleCamera() {
   const camera = document.getElementById('camera');
-  camera.style.display = 'none';
+  if (camera.style.display === 'none') {
+    camera.style.display = 'block';
+  } else {
+    camera.style.display = 'none';
+  }
 }
 
 const emojiElements = [];
