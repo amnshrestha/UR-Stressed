@@ -21,17 +21,25 @@ const freqs = [
 ];
 
 function reset() {
+  for (let i = 0; i < freqs.length; i++) {
+    freqs[i] = 0;
+  }
+  render();
   socket.emit('reset');
 }
 
-
-
+function hideCamera() {
+  const camera = document.getElementById('camera');
+  camera.style.display = 'none';
+}
 
 const emojiElements = [];
-const sizeFactor = 45;
+// max emoji font size in px
+const maxSize = 125;
+const minSize = 40;
 emojis.forEach((emoji, index) => {
   const node = document.createElement('div');
-  node.style.fontSize = '16px';
+  node.style.fontSize = '0px';
   node.style.display = 'block';
   node.style.position = 'absolute';
   const top = Math.floor(Math.random() * (cloud.clientHeight / 2) + 20)
@@ -44,16 +52,20 @@ emojis.forEach((emoji, index) => {
 });
 
 function render() {
-  console.log(freqs); // eslint-disable-line
   const total = freqs.reduce((a, b) => a + b, 0);
   
   emojiElements.forEach((node, index) => {
-    let size = freqs[index]/total * 100;
-    node.style.fontSize = `${size + sizeFactor}px`;
-    if (size === 0){
-      node.style.fontSize = `0px`;
+    let size = total === 0 ? 0 : freqs[index]/total;
+    const computedFontSize = Math.floor(size * maxSize);
+    if (size === 0) {
+      node.style.fontSize = '0px';
       // Or display display to none 
+    } else if (computedFontSize > minSize) {
+      node.style.fontSize = `${computedFontSize}px`;
+    } else {
+      node.style.fontSize = `${minSize}px`;
     }
+    
     cloud.appendChild(node);
   });
 }
@@ -67,9 +79,9 @@ socket.on('connect', function() {
 socket.on('raiseHandResponse', function(name, count, raisedValue) {
   $('.handRaisedList').css('display','flex');
   if(raisedValue){
-    $('#peopleHandRaised').append('<li>'+name+'</li>')
+    $('#peopleHandRaised').append('<p>✋ '+name+'</p>')
   }else{
-    $("#peopleHandRaised li").each(function(){
+    $("#peopleHandRaised p").each(function(){
       console.log($(this).text());
       if($(this).text() === name){
         this.remove();
@@ -116,6 +128,34 @@ socket.on('yesResponse', function(count) {
   freqs[6] = count;
   render();
   console.log('yes detected!');
+});
+
+socket.on('updateEmotions', function(emotions) {
+  const wordsToEmojis = {
+    'happy': '😄',
+    'ready': '🤓',
+    'notgreat': '🙃',
+    'sad': '😞',
+    'dying': '😱',
+    'sick': '😷',
+  };
+
+  let emotionsMap = {};
+  Object.keys(emotions).forEach(user => {
+    let val = emotions[user];
+    if (Object.keys(emotionsMap).includes(val)) {
+      emotionsMap[val] += 1;
+    } else {
+      emotionsMap[val] = 1;
+    }
+  });
+
+  const emotionsWrapper = document.getElementById('class-emotions');
+
+  Object.keys(emotionsMap).forEach(emotion => {
+    let htmlContent = `<div class="emotion"><p>${wordsToEmojis[emotion]}</p><span>${emotionsMap[emotion]}</span></div>`;
+    emotionsWrapper.innerHTML += htmlContent;
+  });
 });
 
 window.setInterval(function() {

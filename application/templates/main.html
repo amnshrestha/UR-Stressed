@@ -33,23 +33,27 @@
     <div class="left">
       <video class="input_video" id="camera"></video>
       <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+
+      <button onclick="hideCamera()">Hide</button>
+      <button onclick="reset()">Reset Values</button>
     </div>
     <div class="right">
       
       <div class="reactions">
         <h2>Class Reactions</h2>
         <div id="cloud"></div>
-        <div class="handRaisedList">
-          List of people with hand raised 
-          <br>
-          <ul id="peopleHandRaised">
-          </ul>
-        </div>
+      </div>
+      <div class="handRaisedList">
+        List of people with hand raised 
+        <br>
+        <div id="peopleHandRaised"></div>
       </div>
     </div>
   </div>
-  <button onclick="reset()">Reset Values</button>
-
+  <div class="emotions-title-wrapper"><h2>Class Emotions</h2></div>
+  <div id="class-emotions" class="class-emotions">
+  </div>
+  
   <!-- Socket IO  -->
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 

@@ -35,7 +35,7 @@ h3{
 margin-bottom: 2vh;
 }
 
-.wrapper {
+.home-wrapper {
   display: flex;
   flex-direction: row;
   width: 100vw;
@@ -80,7 +80,8 @@ button{
   display:inline-block;
   padding:0.5em 3em;
   border:0.16em solid #000000;
-  margin:0 0.3em 0.3em 0;
+  /* margin:0 0.3em 0.3em 0; */
+  margin: 8px;
   box-sizing: border-box;
   text-decoration:none;
   text-transform:uppercase;

@@ -49,24 +49,38 @@ class Session:
         return self.totalSurprised
 
     def updateSmiling(self, value):
+        if self.peopleSmiling == 0 and value == -1:
+          return
         self.peopleSmiling = self.peopleSmiling + value
 
     def updateConfused(self, value):
+        if self.peopleConfused == 0 and value == -1:
+          return
         self.peopleConfused = self.peopleConfused + value
 
     def updateRaisedHands(self, value):
+        if self.totalRaisedHand == 0 and value == -1:
+          return
         self.totalRaisedHand = self.totalRaisedHand + value
 
     def updateSurprised(self, value):
+        if self.totalSurprised == 0 and value == -1:
+          return
         self.totalSurprised = self.totalSurprised + value
 
     def updateThumbsUp(self, value):
+        if self.totalThumbs == 0 and value == -1:
+          return
         self.totalThumbs = self.totalThumbs + value
     
     def updateYes(self, value):
+        if self.totalYes == 0 and value == -1:
+          return
         self.totalYes = self.totalYes + value
 
     def updateNo(self, value):
+        if self.totalNo == 0 and value == -1:
+          return
         self.totalNo = self.totalNo + value
 
 

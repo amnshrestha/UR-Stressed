@@ -45,15 +45,16 @@ function onResults(results) {
 
     nd.startDetect(results.faceLandmarks);
   } else {
-    // IS_CONFUSED = false;
-    // IS_SMILING = false;
+    IS_CONFUSED = false;
+    IS_SMILING = false;
   }
 
   if (typeof results.leftHandLandmarks !== 'undefined' || typeof results.rightHandLandmarks !== 'undefined') {
     hr.checkForHand(results.leftHandLandmarks, results.rightHandLandmarks, results.faceLandmarks);
     hr.checkforThumbsUp(results.leftHandLandmarks, results.rightHandLandmarks);
   } else {
-    // IS_HAND_RAISED = false;
+    IS_HAND_RAISED = false;
+    IS_THUMBS_UP = false;
   }
 
   //Use this to find coordinates
@@ -91,7 +92,7 @@ const camera = new Camera(videoElement, {
 camera.start();
 
 
-let namespace = "/web";
+let namespace = '/web';
 var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 socket.on('connect', function() {
   var userName = $.urlParam('name');
@@ -107,9 +108,6 @@ $.urlParam = function (name) {
 
   return (results !== null) ? results[1] || 0 : false;
 }
-
-
-
 
 // Written by Aman
 // Finds x,y coordinate of a landmark
@@ -486,25 +484,25 @@ class EyeBrowDetector {
       if(this.currentFrameConfused % this.frameSkip == 0) {
         let previousValues = this.previousData;
 
-        // console.log("prev distance: " + previousValues.prev_distance_x_eyebrows_start)
-        // console.log("current distance: " + distance_x_eyebrows_start)
+        // console.log('prev distance: ' + previousValues.prev_distance_x_eyebrows_start)
+        // console.log('current distance: ' + distance_x_eyebrows_start)
         if (distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_x_eyebrows_start) {
-          // console.log("distance X is smaller than before");
-          // console.log("z distance is: " + this.const_distance_z_average)
+          // console.log('distance X is smaller than before');
+          // console.log('z distance is: ' + this.const_distance_z_average)
           this.eyebrowsCloser = true;
         }
 
         if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
         (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
-          // console.log("distance Y is smaller than before");
+          // console.log('distance Y is smaller than before');
           this.eyebrowsLower = true;
         }
 
         // if ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_left_eyebrow) || 
         // (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor < this.const_distance_y_right_eyebrow)) {
-        //   console.log("distance Y is smaller than before");
+        //   console.log('distance Y is smaller than before');
         //   this.eyebrowsLower = true;
-        //   // console.log("z distance is: " + this.const_distance_z_average);
+        //   // console.log('z distance is: ' + this.const_distance_z_average);
         // }
 
         if (this.eyebrowsCloser && this.eyebrowsLower && !previousValues.surprised) {
@@ -530,7 +528,7 @@ class EyeBrowDetector {
 
         // if ((distance_y_left_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_left_eyebrow) || 
         // (distance_y_right_eyebrows * this.eyebrowsDistanceLengthFactor < previousValues.prev_distance_y_right_eyebrow)) {
-        //   console.log("distance Y is smaller than before");
+        //   console.log('distance Y is smaller than before');
         // }
        
         previousValues.prev_distance_x_eyebrows_start = distance_x_eyebrows_start;
@@ -559,26 +557,26 @@ class EyeBrowDetector {
 
     if(this.currentFrameSurprised % this.frameSkip == 0){
       let previousValues = this.previousData;
-      // console.log("check for surprised");
+      // console.log('check for surprised');
       //Distance between current and previous middles of eyebrows
       // let leftEyebrowChange = Math.abs(this.y_for_left_eyebrow_middle - previousValues.prev_y_for_left_eyebrow_middle)
       // let rightEyebrowChange = Math.abs(this.y_for_right_eyebrow_middle - previousValues.prev_y_for_right_eyebrow_middle)
-      // console.log("left eyebrow: " + leftEyebrowChange);
-      // console.log("right eyebrow: " + rightEyebrowChange);
+      // console.log('left eyebrow: ' + leftEyebrowChange);
+      // console.log('right eyebrow: ' + rightEyebrowChange);
 
       if ((leftForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_left) &&
       (rightForeheadDistance * this.foreheadDistanceLengthFactor < previousValues.prev_distance_forehead_right)) {
-        // console.log("eyebrows raised")
-        // console.log("You are surprised")
+        // console.log('eyebrows raised')
+        // console.log('You are surprised')
         this.eyebrowsRaised = true;
       }
 
       if (previousValues.prev_distance_lip * this.lipDistanceLengthFactor < distanceBetweenLips) {
-        // console.log("Lips are open")
+        // console.log('Lips are open')
         this.lipOpen = true;
       }
       // if (leftEyebrowChange > this.eyeBrowChangeThreshold && rightEyebrowChange > this.eyeBrowChangeThreshold) {
-      //   console.log("Eyebrows raised")
+      //   console.log('Eyebrows raised')
       // }
 
       if (this.eyebrowsRaised && this.lipOpen) {
@@ -699,7 +697,7 @@ class HandRaised {
       }
       // if (rightHandThumbsUp || leftHandThumbsUp) {
       //   this.thumbsUp = true;
-      //   console.log("Thumbs up");
+      //   console.log('Thumbs up');
       // }
     }
     this.frameCounterThumbsUp++;
@@ -733,7 +731,7 @@ class HandRaised {
       y_rightIndexMCP < y_rightMiddleMCP && 
       y_rightMiddleMCP  < y_rightRingMCP && 
       y_rightRingMCP < y_rightPinkyMCP) {
-        // console.log("thumb higher");
+        // console.log('thumb higher');
         y_thumbsUp = true;
     }
     let x_thumbsUp = false;
@@ -742,12 +740,12 @@ class HandRaised {
       x_rightRingTip * this.thumbsCloseFactor < x_rightRingPIP &&
       x_rightPinkyTip * this.thumbsCloseFactor < x_rightPinkyPIP) 
     {
-      // console.log("hand close");
+      // console.log('hand close');
       x_thumbsUp = true;
     }
 
     if (y_thumbsUp && x_thumbsUp) {
-      // console.log("One hand Thumbs up");
+      // console.log('One hand Thumbs up');
       return true;
     }
     return false;

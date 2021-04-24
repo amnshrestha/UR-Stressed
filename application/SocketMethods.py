@@ -39,14 +39,12 @@ def connect_web():
     socketio.emit('message','Message is being sent', namespace='/web')
 
 @socketio.on('initialData', namespace='/web')
-def surprised_detected(initialData):
-    # print('[INFO] This person is surprised: {}'.format(request.sid))
+def inital_data(initialData):
     currentName = initialData['name']
     currentEmoji = initialData['emoji']
     nameDict[request.sid] = currentName
     emojiDict[request.sid] = currentEmoji
-
-
+    socketio.emit('updateEmotions', emojiDict, namespace='/web')
 
 @socketio.on('nodDetection', namespace='/web')
 def nod_detector(data):
@@ -105,9 +103,10 @@ def thumbs_up_detected(data):
 
 @socketio.on('reset', namespace='/web')
 def reset():
+    nameDict = {}
+    emojiDict = {}
     sessionOne.resetValues()
 
 @socketio.on('disconnect', namespace='/web')
 def disconnect_web():
     print('[INFO] Web client disconnected: {}'.format(request.sid))
-
