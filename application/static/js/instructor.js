@@ -155,10 +155,12 @@ socket.on('updateEmotions', function(emotions) {
   });
 
   const emotionsWrapper = document.getElementById('class-emotions');
-
+  emotionsWrapper.innerHTML = '';
   Object.keys(emotionsMap).forEach(emotion => {
-    let htmlContent = `<div class="emotion"><p>${wordsToEmojis[emotion]}</p><span>${emotionsMap[emotion]}</span></div>`;
-    emotionsWrapper.innerHTML += htmlContent;
+    if (emotion !== undefined && wordsToEmojis[emotion] !== undefined) {
+      let htmlContent = `<div class="emotion"><p>${wordsToEmojis[emotion]}</p><span>${emotionsMap[emotion]}</span></div>`;
+      emotionsWrapper.innerHTML += htmlContent;
+    }
   });
 });
 

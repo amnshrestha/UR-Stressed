@@ -105,6 +105,7 @@ def thumbs_up_detected(data):
 def reset():
     nameDict = {}
     emojiDict = {}
+    socketio.emit('updateEmotions', emojiDict, namespace='/web')
     sessionOne.resetValues()
 
 @socketio.on('disconnect', namespace='/web')
