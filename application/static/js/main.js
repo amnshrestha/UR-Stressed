@@ -232,6 +232,10 @@ class SmileDetector {
       ) {
         if (!IS_SMILING) {
           console.log('add smile'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('smile', { value: 1 });
         }
         IS_SMILING = true;
@@ -243,6 +247,10 @@ class SmileDetector {
       ) {
         if (IS_SMILING) {
           console.log('remove smile'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('smile', { value: -1 });
         }
         IS_SMILING = false;
@@ -508,6 +516,10 @@ class EyeBrowDetector {
         if (this.eyebrowsCloser && this.eyebrowsLower && !previousValues.surprised) {
           if (!IS_CONFUSED) {
             console.log('add confused'); // eslint-disable-line
+            if(!socket.connected){
+              console.log("Reconnecting")
+              socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            }
             socket.emit('confused', { value: 1 });
           }
   
@@ -520,6 +532,10 @@ class EyeBrowDetector {
             (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor > previousValues.prev_distance_y_right_eyebrow))) {
           if (IS_CONFUSED) {
             console.log('remove confused'); // eslint-disable-line
+            if(!socket.connected){
+              console.log("Reconnecting")
+              socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            }
             socket.emit('confused', { value: -1 });
           }
   
@@ -583,6 +599,10 @@ class EyeBrowDetector {
         this.surprised = true;
         if (!IS_SURPRISED) {
           console.log('add surprised'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('surprised', { value: 1 });
         }
 
@@ -594,6 +614,10 @@ class EyeBrowDetector {
       (previousValues.prev_distance_lip * this.lipDistanceLengthFactor > distanceBetweenLips)) {
         if (IS_SURPRISED) {
           console.log('remove surprised'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('surprised', { value: -1 });
         }
 
@@ -658,6 +682,10 @@ class HandRaised {
       if (palm) {
         if (!IS_HAND_RAISED) {
           console.log('add hand'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('handraise', { value: 1 });
         }
 
@@ -665,6 +693,10 @@ class HandRaised {
       } else {
         if (IS_HAND_RAISED) {
           console.log('remove hand'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('handraise', { value: -1 });
         }
         IS_HAND_RAISED = false;
@@ -684,6 +716,10 @@ class HandRaised {
       if (rightHandThumbsUp) {
         if (!IS_THUMBS_UP) {
           console.log('add thumb'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('thumb', { value: 1 });
         }
 
@@ -691,6 +727,10 @@ class HandRaised {
       } else {
         if (IS_THUMBS_UP) {
           console.log('remove thumb'); // eslint-disable-line
+          if(!socket.connected){
+            console.log("Reconnecting")
+            socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+          }
           socket.emit('thumb', { value: -1 });
         }
         IS_THUMBS_UP = false;

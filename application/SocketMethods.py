@@ -8,6 +8,7 @@ sessionOne = Session()
 detectorDict = {}
 nameDict = {}
 emojiDict = {}
+idDict = {}
 
 @app.route('/')
 def index():
@@ -42,9 +43,25 @@ def connect_web():
 def inital_data(initialData):
     currentName = initialData['name']
     currentEmoji = initialData['emoji']
-    nameDict[request.sid] = currentName
-    emojiDict[request.sid] = currentEmoji
-    socketio.emit('updateEmotions', emojiDict, namespace='/web')
+    print("Reaching EHre again")
+    if(currentName in nameDict.values):
+        print("===============================")
+        print("Reaching here")
+        idToReplace = idDict[currentName]
+        del nameDict[idToReplace]
+        del emojiDict[idToReplace]
+        print(nameDict[idToReplace])
+        print(emojiDict[idToReplace])
+        nameDict[request.sid] = currentName
+        idDict[currentName] = request.sid
+        emojiDict[request.sid] = currentEmoji
+        print("===============================")
+        socketio.emit('updateEmotions', emojiDict, namespace='/web')
+    else:
+        nameDict[request.sid] = currentName
+        idDict[currentName] = request.sid
+        emojiDict[request.sid] = currentEmoji
+        socketio.emit('updateEmotions', emojiDict, namespace='/web')
 
 @socketio.on('nodDetection', namespace='/web')
 def nod_detector(data):
@@ -105,6 +122,7 @@ def thumbs_up_detected(data):
 def reset():
     nameDict = {}
     emojiDict = {}
+    idDict = {}
     socketio.emit('updateEmotions', emojiDict, namespace='/web')
     sessionOne.resetValues()
 
