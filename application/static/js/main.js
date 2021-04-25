@@ -43,7 +43,7 @@ function onResults(results) {
     eyebrowDetector.checkForEyebrowConfused()
     eyebrowDetector.checkForSurprise() 
 
-    nd.startDetect(results.faceLandmarks);
+    // nd.startDetect(results.faceLandmarks);
   } else {
     IS_CONFUSED = false;
     IS_SMILING = false;
