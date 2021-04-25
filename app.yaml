@@ -1,3 +1,3 @@
 runtime: python37
 
-default_expiration: "10m"
+default_expiration: "2m"
