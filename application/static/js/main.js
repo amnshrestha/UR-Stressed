@@ -93,13 +93,18 @@ camera.start();
 
 
 let namespace = '/web';
-var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace, {forceNew: true});
 socket.on('connect', function() {
   var userName = $.urlParam('name');
   var userEmoji = $.urlParam('emoji');
   socket.emit('initialData', { name: userName, emoji:userEmoji });
   console.log('Connection successful');
 });
+
+// socket.on('disconnect', function() {
+//   console.log("reconenct here");
+//   socket.io.reconnect();
+// });
 
 // Code copied from https://stackoverflow.com/questions/7731778/get-query-string-parameters-url-values-with-jquery-javascript-querystring
 $.urlParam = function (name) {

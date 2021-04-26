@@ -89,6 +89,7 @@ def hand_raise_detected(data):
     # print('[INFO] This person raised their hand: {}'.format(request.sid))
     sessionOne.updateRaisedHands(data['value'])
     name = data['name']
+    print(name," just raised their hand")
     raisedValue = True
     if(data['value'] == -1):
         raisedValue = False

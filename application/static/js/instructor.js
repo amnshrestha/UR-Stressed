@@ -86,8 +86,9 @@ socket.on('raiseHandResponse', function(name, count, raisedValue) {
     $('#peopleHandRaised').append('<p>✋ '+name+'</p>')
   }else{
     $("#peopleHandRaised p").each(function(){
-      console.log($(this).text());
-      if($(this).text() === name){
+      var nameRightNow = $(this).text().substring(2);
+      console.log(nameRightNow);
+      if(nameRightNow === name){
         this.remove();
       }
     });

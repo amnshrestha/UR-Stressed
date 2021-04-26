@@ -83,7 +83,8 @@ class Session:
           return
         self.totalNo = self.totalNo + value
 
-
+# The following code was inspired from
+# https://towardsdatascience.com/real-time-head-pose-estimation-in-python-e52db1bc606a 
 class HeadMovementDetection:
     def __init__(self):
         self.model_points = np.array([
