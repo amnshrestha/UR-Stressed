@@ -6,7 +6,6 @@ from flask_socketio import SocketIO, send
 socketio = SocketIO(app, logger = False)
 sessionOne = Session()
 detectorDict = {}
-nameDict = {}
 emojiDict = {}
 
 @app.route('/')
@@ -42,8 +41,7 @@ def connect_web():
 def inital_data(initialData):
     currentName = initialData['name']
     currentEmoji = initialData['emoji']
-    nameDict[request.sid] = currentName
-    emojiDict[request.sid] = currentEmoji
+    emojiDict[currentName] = currentEmoji
     socketio.emit('updateEmotions', emojiDict, namespace='/web')
 
 @socketio.on('nodDetection', namespace='/web')
@@ -90,10 +88,11 @@ def surprised_detected(data):
 def hand_raise_detected(data):
     # print('[INFO] This person raised their hand: {}'.format(request.sid))
     sessionOne.updateRaisedHands(data['value'])
+    name = data['name']
     raisedValue = True
     if(data['value'] == -1):
         raisedValue = False
-    socketio.emit('raiseHandResponse', (nameDict[request.sid],sessionOne.getTotalRaisedHand(),raisedValue), namespace='/web')
+    socketio.emit('raiseHandResponse', (name,sessionOne.getTotalRaisedHand(),raisedValue), namespace='/web')
 
 @socketio.on('thumb', namespace='/web')
 def thumbs_up_detected(data):
@@ -103,7 +102,6 @@ def thumbs_up_detected(data):
 
 @socketio.on('reset', namespace='/web')
 def reset():
-    nameDict = {}
     emojiDict = {}
     socketio.emit('updateEmotions', emojiDict, namespace='/web')
     sessionOne.resetValues()

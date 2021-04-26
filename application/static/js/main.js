@@ -658,14 +658,16 @@ class HandRaised {
       if (palm) {
         if (!IS_HAND_RAISED) {
           console.log('add hand'); // eslint-disable-line
-          socket.emit('handraise', { value: 1 });
+          var currentName = $.urlParam('name');
+          socket.emit('handraise', { name:currentName,value: 1 });
         }
 
         IS_HAND_RAISED = true;
       } else {
         if (IS_HAND_RAISED) {
           console.log('remove hand'); // eslint-disable-line
-          socket.emit('handraise', { value: -1 });
+          var currentName = $.urlParam('name');
+          socket.emit('handraise', { name:currentName,value: -1 });
         }
         IS_HAND_RAISED = false;
       }
