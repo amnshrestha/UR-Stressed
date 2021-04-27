@@ -18,6 +18,11 @@ def instructorView():
     """Instructor view."""
     return render_template('main.html')
 
+@app.route('/class')
+def classView():
+    """Instructor view."""
+    return render_template('class.html')
+
 @app.route('/about')
 def aboutView():
     """About view."""
@@ -31,10 +36,6 @@ def navView():
 @socketio.on('connect', namespace='/web')
 def connect_web():
     print('[INFO] Web client connected: {}'.format(request.sid))
-    
-    headNodDetector = HeadMovementDetection()
-    detectorDict[request.sid] = headNodDetector
-
     socketio.emit('message','Message is being sent', namespace='/web')
 
 @socketio.on('initialData', namespace='/web')
