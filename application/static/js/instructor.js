@@ -1,5 +1,7 @@
 const cloud = document.getElementById('cloud');
 
+
+
 const emojis = [
   '✋', // hand raised
   '😀', // smile

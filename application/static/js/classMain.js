@@ -492,9 +492,9 @@ class EyeBrowDetector {
           this.confused = true;
         }
 
-        if ((distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor > previousValues.prev_distance_x_eyebrows_start) &&
-            ((distance_y_left_eyebrows * this.eyebrowsEyeLengthFactor > previousValues.prev_distance_y_left_eyebrow) || 
-            (distance_y_right_eyebrows * this.eyebrowsEyeLengthFactor > previousValues.prev_distance_y_right_eyebrow))) {
+        if ((distance_x_eyebrows_start  > previousValues.prev_distance_x_eyebrows_start * this.eyebrowsDistanceLengthFactor) &&
+            ((distance_y_left_eyebrows  > previousValues.prev_distance_y_left_eyebrow * this.eyebrowsEyeLengthFactor) || 
+            (distance_y_right_eyebrows  > previousValues.prev_distance_y_right_eyebrow * this.eyebrowsEyeLengthFactor))) {
           if (IS_CONFUSED) {
             console.log('remove confused'); // eslint-disable-line
             var value = 2;
@@ -570,18 +570,38 @@ class EyeBrowDetector {
         this.surprised = true;
         if (!IS_SURPRISED) {
           console.log('add surprised'); // eslint-disable-line
-          socket.emit('surprised', { value: 1 });
+          var value = 1;
+          var data = {value};
+          var options = {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify(data)
+          };
+          var urlToGo = '/surprised/'+value;
+          fetch(urlToGo,options);
         }
 
         IS_SURPRISED = true;
       }
       
-      if (((leftForeheadDistance * this.foreheadDistanceLengthFactor > previousValues.prev_distance_forehead_left) &&
-      (rightForeheadDistance * this.foreheadDistanceLengthFactor > previousValues.prev_distance_forehead_right)) &&
+      if (((leftForeheadDistance  > previousValues.prev_distance_forehead_left * this.foreheadDistanceLengthFactor) &&
+      (rightForeheadDistance > previousValues.prev_distance_forehead_right * this.foreheadDistanceLengthFactor )) &&
       (previousValues.prev_distance_lip * this.lipDistanceLengthFactor > distanceBetweenLips)) {
         if (IS_SURPRISED) {
           console.log('remove surprised'); // eslint-disable-line
-          socket.emit('surprised', { value: -1 });
+          var value = 2;
+          var data = {value};
+          var options = {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify(data)
+          };
+          var urlToGo = '/surprised/'+value;
+          fetch(urlToGo,options);
         }
 
         IS_SURPRISED = false;
@@ -693,14 +713,34 @@ class HandRaised {
       if (rightHandThumbsUp) {
         if (!IS_THUMBS_UP) {
           console.log('add thumb'); // eslint-disable-line
-          socket.emit('thumb', { value: 1 });
+          var value = 1;
+          var data = {value};
+          var options = {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify(data)
+          };
+          var urlToGo = '/thumbdetect/'+value;
+          fetch(urlToGo,options);
         }
 
         IS_THUMBS_UP = true;
       } else {
         if (IS_THUMBS_UP) {
           console.log('remove thumb'); // eslint-disable-line
-          socket.emit('thumb', { value: -1 });
+          var value = 2;
+          var data = {value};
+          var options = {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify(data)
+          };
+          var urlToGo = '/thumbdetect/'+value;
+          fetch(urlToGo,options);
         }
         IS_THUMBS_UP = false;
       }

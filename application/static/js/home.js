@@ -15,7 +15,7 @@ $('#submitMood').click(()=>{
       
       return;
     }
-    window.location = '/instructor?name='+name+'&emoji='+emojiSelected;
+    window.location = '/class?name='+name+'&emoji='+emojiSelected;
     console.log(window.location);
     
 })
