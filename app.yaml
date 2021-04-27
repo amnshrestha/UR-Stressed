@@ -2,4 +2,3 @@ runtime: python37
 
 default_expiration: "1m"
 
-# entrypoint: gunicorn -b :$PORT main:app
