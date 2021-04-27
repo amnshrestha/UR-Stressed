@@ -31,7 +31,18 @@ function reset() {
     freqs[i] = 0;
   }
   render();
-  socket.emit('reset');
+  data = {'test':0};
+  var options = {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify(data)
+  };
+  console.log("Here");
+  var urlToGo = '/reset';
+  fetch(urlToGo,options);
+  
 }
 
 function toggleCamera() {

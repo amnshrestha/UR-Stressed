@@ -13,17 +13,16 @@ sessionOne = Session()
 
 
 api = Api(app)
-emojiDict = {}
-handRaised= []
+
 
 class MainDetection(Resource):
     def get(self,name, emotion):
-        return emojiDict
+        return sessionOne.emojiDict
     def post(self, name, emotion):
         print('A Client Joined')
         currentName = name
         currentEmoji = emotion
-        emojiDict[currentName] = currentEmoji
+        sessionOne.emojiDict[currentName] = currentEmoji
         return "Added Emoji"
 
 
@@ -39,14 +38,14 @@ class SmileDetection(Resource):
 
 class HandRaiseDetection(Resource):
     def get(self, name, value):
-        return handRaised
+        return sessionOne.handRaised
     def post(self, name, value):
         print("Hand raise detected")
         if(value == 2):
-            if name in handRaised:
-                handRaised.remove(name)
+            if name in sessionOne.handRaised:
+                sessionOne.handRaised.remove(name)
         else:
-            handRaised.append(name)
+            sessionOne.handRaised.append(name)
         return "Raised Hand"
 
 class ConfuseDetection(Resource):
@@ -82,8 +81,8 @@ class ThumbDetection(Resource):
 class GetEmotion(Resource):
     def get(self):
         toReturn = [0,0,0,0,0,0]
-        print(emojiDict)
-        for value in emojiDict.values():
+        print ("emojiDict ",sessionOne.emojiDict)
+        for value in sessionOne.emojiDict.values():
             if(value == 'happy'):
                 toReturn[0] = toReturn[0] + 1
             elif(value == 'ready'):
@@ -96,8 +95,15 @@ class GetEmotion(Resource):
                 toReturn[4] = toReturn[4] + 1
             elif(value == 'sick'):
                 toReturn[5] = toReturn[5] + 1
-        print(toReturn)
         return toReturn
+
+class ResetValues(Resource):
+    def get(self):
+        return "Reset"
+    def post(self):
+        print("Reaching HEre")
+        sessionOne.resetValues()
+        return "Reset VAlues successful"
     
 
 
@@ -109,5 +115,6 @@ api.add_resource(ThumbDetection,"/thumbdetect/<int:value>")
 api.add_resource(SurprisedDetection,"/surprised/<int:value>")
 api.add_resource(GetEmotion,"/getemotion")
 
+api.add_resource(ResetValues,"/reset")
 
 

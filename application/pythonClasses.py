@@ -18,6 +18,9 @@ class Session:
         self.totalNo = 0
         self.totalSurprised = 0
 
+        self.emojiDict = {}
+        self.handRaised= []
+
     def resetValues(self):
       self.peopleSmiling = 0
       self.peopleConfused = 0
@@ -26,6 +29,8 @@ class Session:
       self.totalYes = 0
       self.totalNo = 0
       self.totalSurprised = 0
+      self.emojiDict = {}
+      self.handRaised= []
     
     def getTotalSmiling(self):
         return self.peopleSmiling
