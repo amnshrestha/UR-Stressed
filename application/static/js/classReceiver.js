@@ -101,81 +101,46 @@ const wordsToEmojis = ['😄','🤓','🙃','😞','😱', '😷'];
 
 
 function callForUpdate() {
-    const HttpSmile = new XMLHttpRequest();
 
-    // For Smile
-    var urlSmile='/smile/name/0';
-    HttpSmile.open("GET", urlSmile);
-    HttpSmile.send();
-    HttpSmile.onreadystatechange = (e) => {
-        var count = parseInt(HttpSmile.responseText)
-        freqs[1] = count;
-    }
+    const mainResponse = new XMLHttpRequest();
+     // For All
+    var urlValues='/allvalues';
+    mainResponse.open("GET", urlValues);
+    mainResponse.send();
+    mainResponse.onreadystatechange = (e) => {
+        var returned = mainResponse.responseText
+        console.log("Returned values is")
+        console.log(returned);
+        if(returned.length == 0){
+            return;
+        }
+        var obj = JSON.parse(returned)
+        console.log("JSON IS");
+        console.log(obj);
+        var totalSmiling = obj['totalSmiling'];
+        freqs[1] = parseInt(totalSmiling);//For Smile
+        var totalConfused = obj['totalConfused'];
+        freqs[2] = parseInt(totalConfused);//For Confused
+        var totalThumbsUp = obj['totalThumbs'];
+        freqs[4] = parseInt(totalThumbsUp);//For Thumbs UP
+        var totalSurprised = obj['totalSurprised'];
+        freqs[3] = parseInt(totalSurprised);//For Surprised
 
-    const HttpConfused = new XMLHttpRequest();
-    // For confused
-    var urlConfused='/confuse/0';
-    HttpConfused.open("GET", urlConfused);
-    HttpConfused.send();
-    HttpConfused.onreadystatechange = (e) => {
-        var count = parseInt(HttpConfused.responseText)
-        freqs[2] = count;
-    }
+        var handRaisedList = obj['handRaised'];
+        var emotionList = obj['emotions'];
 
-
-    const HttpThumb = new XMLHttpRequest();
-
-    // For thumb
-    var urlThumb='/thumbdetect/0';
-    HttpThumb.open("GET", urlThumb);
-    HttpThumb.send();
-    HttpThumb.onreadystatechange = (e) => {
-        var count = parseInt(HttpThumb.responseText)
-        freqs[4] = count;
-    }
-
-    const HttpSurprised = new XMLHttpRequest();
-
-    // For surprised
-    var urlSurprised='/surprised/0';
-    HttpSurprised.open("GET", urlSurprised);
-    HttpSurprised.send();
-    HttpSurprised.onreadystatechange = (e) => {
-        var count = parseInt(HttpSurprised.responseText)
-        freqs[3] = count;
-    }
-
-    const HandRaised = new XMLHttpRequest();
-
-    // For surprised
-    var urlHandRaised='/handraise/test/0';
-    HandRaised.open("GET", urlHandRaised);
-    HandRaised.send();
-    HandRaised.onreadystatechange = (e) => {
-        var response = HandRaised.responseText;
-        if(response.length >2){
-            var handRaiseList = JSON.parse(response);
+        if(handRaisedList.length > 0){
             var str = "<ul>";
-            handRaiseList.forEach(function(name) {
+            handRaisedList.forEach(function(name) {
                 str += '<p>✋ '+name+'</p>';
             }); 
             str+="</ul>"
             $('#peopleHandRaised').html(str);
-            freqs[0] = handRaiseList.length;
+            freqs[0] = handRaisedList.length;
         }
         
-    }
 
-    const HttpEmotion = new XMLHttpRequest();
-
-    // For surprised
-    var urlEmotion='/getemotion';
-    HttpEmotion.open("GET", urlEmotion);
-    HttpEmotion.send();
-    HttpEmotion.onreadystatechange = (e) => {
-        var response = HttpEmotion.responseText;
-        if(response.length > 2){
-            var emotionList = JSON.parse(response);
+        if(emotionList.length > 0){
             var str = ""
             for (var i =0;i<emotionList.length;i++){
                 if(emotionList[i]!=0){
@@ -185,9 +150,53 @@ function callForUpdate() {
             var emotionsWrapper = $("#class-emotions");
             emotionsWrapper.html(str);
         }
-       
-        // emotionsWrapper.html(str);
+        
     }
+
+
+    // const HandRaised = new XMLHttpRequest();
+
+    // For surprised
+    // var urlHandRaised='/handraise/test/0';
+    // HandRaised.open("GET", urlHandRaised);
+    // HandRaised.send();
+    // HandRaised.onreadystatechange = (e) => {
+    //     var response = HandRaised.responseText;
+    //     if(response.length >2){
+    //         var handRaiseList = JSON.parse(response);
+    //         var str = "<ul>";
+    //         handRaiseList.forEach(function(name) {
+    //             str += '<p>✋ '+name+'</p>';
+    //         }); 
+    //         str+="</ul>"
+    //         $('#peopleHandRaised').html(str);
+    //         freqs[0] = handRaiseList.length;
+    //     }
+        
+    // }
+
+    // const HttpEmotion = new XMLHttpRequest();
+
+    // For surprised
+    // var urlEmotion='/getemotion';
+    // HttpEmotion.open("GET", urlEmotion);
+    // HttpEmotion.send();
+    // HttpEmotion.onreadystatechange = (e) => {
+    //     var response = HttpEmotion.responseText;
+    //     if(response.length > 2){
+    //         var emotionList = JSON.parse(response);
+    //         var str = ""
+    //         for (var i =0;i<emotionList.length;i++){
+    //             if(emotionList[i]!=0){
+    //                 str+=`<div class="emotion"><p>${wordsToEmojis[i]}</p><span>${emotionList[i]}</span></div>`;
+    //             }
+    //         }
+    //         var emotionsWrapper = $("#class-emotions");
+    //         emotionsWrapper.html(str);
+    //     }
+       
+    //     // emotionsWrapper.html(str);
+    // }
     render();
 }
 

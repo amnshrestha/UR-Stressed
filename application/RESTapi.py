@@ -104,6 +104,38 @@ class ResetValues(Resource):
         print("Reaching HEre")
         sessionOne.resetValues()
         return "Reset VAlues successful"
+
+class AllValues(Resource):
+    def get(self):
+        toReturn = [0,0,0,0,0,0]
+        print ("emojiDict ",sessionOne.emojiDict)
+        for value in sessionOne.emojiDict.values():
+            if(value == 'happy'):
+                toReturn[0] = toReturn[0] + 1
+            elif(value == 'ready'):
+                toReturn[1] = toReturn[1] + 1
+            elif(value == 'notgreat'):
+                toReturn[2] = toReturn[2] + 1
+            elif(value == 'sad'):
+                toReturn[3] = toReturn[3] + 1
+            elif(value == 'dying'):
+                toReturn[4] = toReturn[4] + 1
+            elif(value == 'sick'):
+                toReturn[5] = toReturn[5] + 1
+        valuesDict = {
+            'totalThumbs':sessionOne.getTotalThumbs(),
+            'totalSurprised':sessionOne.getTotalSurprised(),
+            'totalConfused':sessionOne.getTotalConfused(),
+            'handRaised':sessionOne.handRaised,
+            'totalSmiling':sessionOne.getTotalSmiling(),
+            'emojiDict':sessionOne.emojiDict,
+            'emotions':toReturn
+        }
+        return valuesDict
+    def post(self):
+        print("Reaching HEre")
+        sessionOne.resetValues()
+        return "Reset VAlues successful"
     
 
 
@@ -116,5 +148,6 @@ api.add_resource(SurprisedDetection,"/surprised/<int:value>")
 api.add_resource(GetEmotion,"/getemotion")
 
 api.add_resource(ResetValues,"/reset")
+api.add_resource(AllValues,"/allvalues")
 
 
