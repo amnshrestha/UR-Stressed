@@ -1,5 +1,11 @@
-# UR-Stressed
+# How UR Feeling
 
+
+## Project Description
+This project allows better communication during virtual calls. Using MediaPipe, we recognize smile, confusion, surprised and gestures like raising hand and giving a thumbs up. This information is then shared with other users without having to share video feed with them
+
+
+## Notes for collaborators
 
 Because of the use of camera, the code doesn't run from VS code. 
 Please use a terminal.
@@ -13,25 +19,23 @@ flask run #...then Ctrl-C to exit
 ```
 
 
-## To-Do
+## How it works
 
-Implement client side html and javascript to use mediapipe
+Implemented client side html and javascript to use mediapipe
 
-For the Flask app:
-
-    - setup up socket.io correctly
 
 Client-Side tasks:
 
-    - Get landmark coordinates
+    - Get landmark coordinates using mediapipe
     - Check for smile
     - Check for eyebrow change
     - Check for hand raise
+    - Once features detected, make a post request to the server
     - Get landmark coordinates of face and send it to the server
 
 Server-Side tasks:
     
-    - Use landmark coordinates to find head movement
-    - Set up database
-    - Keep ID for each class
+    - Count the number of gestures at a particular time
+    - Update and send it to users
+    - Keep track of hand raised and hand lowered
     
